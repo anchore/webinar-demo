@@ -1,0 +1,22 @@
+{
+	"packages": [
+		{
+			"name": "vim-common",
+			"version": "2:8.2.2637-20.el9_1",
+			"origin": "CentOS",
+			"license": "Vim",
+			"size": "35558020",
+			"type": "rpm"
+		},
+		{
+			"name": "wicked",
+			"version": "0.6.1",
+			"location": "/app/gems/specifications/wicked-0.9.0.gemspec",
+			"origin": "schneems",
+			"license": "MIT",
+			"source": "http://github.com/schneems/wicked",
+			"files": ["README.md"],
+			"type": "gem"	    
+		}
+	]
+}
