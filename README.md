@@ -1,6 +1,6 @@
 # Software Security in the Real World
 
-This tutorial steps you through deploying Anchore Enterprise in a POC test environment. We walk you through a series of labs showcasing how you can secure your software supply chain.
+This tutorial steps you through deploying Anchore Enterprise in a POC test environment. We then walk you through a series of labs showcasing how you can secure your software supply chain.
 
 > The deployment from this tutorial should not be viewed as production ready, and will receive limited support from Anchore, but don't let that stop you from learning!
 

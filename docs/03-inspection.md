@@ -1,4 +1,4 @@
-# Inpsection
+# Inspection
 
 Security checks inspecting for vulnerabilities, secrets, permissions, and malware
 
