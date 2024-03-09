@@ -17,7 +17,7 @@ volumes:
 services:
   # The primary API endpoint service
   api:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     depends_on:
       - anchore-db
       - catalog
@@ -45,7 +45,7 @@ services:
     command: ["anchore-enterprise-manager", "service", "start", "apiext"]
   # Catalog is the primary persistence and state manager of the system
   catalog:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     depends_on:
       - anchore-db
     volumes:
@@ -70,7 +70,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "catalog"]
   queue:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     depends_on:
       - anchore-db
       - catalog
@@ -95,7 +95,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "simplequeue"]
   policy-engine:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     depends_on:
       - anchore-db
       - catalog
@@ -141,7 +141,7 @@ services:
 
     command: ["anchore-enterprise-manager", "service", "start", "policy_engine"]
   analyzer:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     depends_on:
       - anchore-db
       - catalog
@@ -181,7 +181,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
   rbac-authorizer:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -207,7 +207,7 @@ services:
     command:
       ["anchore-enterprise-manager", "service", "start", "rbac_authorizer"]
   rbac-manager:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -234,7 +234,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "rbac_manager"]
   reports:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -261,7 +261,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "reports"]
   reports_worker:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -287,7 +287,7 @@ services:
     command:
       ["anchore-enterprise-manager", "service", "start", "reports_worker"]
   notifications:
-    image: docker.io/anchore/webinar-content-test:enterprise-hightower
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z

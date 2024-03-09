@@ -1,6 +1,6 @@
 #!/bin/bash
 
-namespace="anchore-hightower-demo"
+namespace="anchore-demo"
 
 echo "Using k8s namespace ${namespace}"
 echo "Pre-flight checks..."
@@ -22,4 +22,4 @@ echo "Installing configuration/secrets for the demo"
 kubectl -n ${namespace} apply -f ./demo-secrets.yaml
 
 echo "Installing Anchore Enterprise to namespace ${namespace}"
-helm install -n ${namespace} anchore-hightower anchore/enterprise -f values.yaml
+helm install -n ${namespace} anchore-demo anchore/enterprise -f values.yaml

@@ -1,2 +1,3 @@
 deployment/demo-secrets.yaml
 deployment/license.yaml
+deployment/docker-config.json
