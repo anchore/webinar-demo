@@ -3,10 +3,15 @@
 namespace="anchore-demo"
 
 echo "Using k8s namespace ${namespace}"
+
 echo "Pre-flight checks..."
+
 echo "Verifying kubectl installed..."
+
 echo "Verifying helm installed..."
+
 echo "Adding Anchore chart repository..."
+helm repo add anchore https://charts.anchore.io
 
 echo "Verifying you have the image and license information from signup at: https://forms.gle/NMhpVU19SuXRnLhC9"
 if ! test ./demo-secrets.yaml
