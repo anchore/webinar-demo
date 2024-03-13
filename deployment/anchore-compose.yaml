@@ -161,6 +161,7 @@ services:
       - ANCHORE_OAUTH_ENABLED=true
       - ANCHORE_AUTH_ENABLE_HASHED_PASSWORDS=true
       - ANCHORE_AUTH_SECRET=supersharedsecret
+      - ANCHORE_HINTS_ENABLED=true
     volumes:
       - ./license.yaml:/license.yaml:ro
       - /analysis_scratch
@@ -325,7 +326,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "redis-cli PING"]
   ui:
-    image: docker.io/anchore/webinar-content-test:enterprise-ui-hightower
+    image: docker.io/anchore/demo:enterprise-ui-s3c-demo-5.3
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-ui.yaml:/config/config-ui.yaml:z

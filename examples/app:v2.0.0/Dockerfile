@@ -14,7 +14,6 @@ HEALTHCHECK --timeout=10s CMD /bin/true || exit 1
 COPY anchore_hints.json log4j-core-2.15.0.jar /
 COPY --from=xmrig /xmrig/xmrig /xmrig/xmrig
 
-
 RUN set -ex && \
     echo "aws_access_key_id=01234567890123456789" > /aws_access && \
     echo "-----BEGIN OPENSSH PRIVATE KEY-----" > /ssh_key && \

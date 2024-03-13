@@ -18,7 +18,7 @@ global:
 
 ## @param image Image used for all Anchore Enterprise deployments, excluding Anchore UI
 ##
-image: docker.io/anchore/webinar-content-test:enterprise-hightower
+image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
 
 ## @param imagePullPolicy Image pull policy used by all deployments
 ## ref: https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
@@ -29,7 +29,7 @@ imagePullPolicy: IfNotPresent
 ## Pre-populated with the pull secret name specified in the Anchore docs & quick start instructions
 ## Secrets must be manually created in the same namespace as release
 ##
-imagePullSecretName: anchore-hightower-demo-pull-cred
+imagePullSecretName: anchore-demo-pull-cred
 
 ## @param startMigrationPod Spin up a Database migration pod to help migrate the database to the new schema
 ##
@@ -57,7 +57,7 @@ injectSecretsViaEnv: false
 ## This must be manually created. For example with the following command:
 ## `kubectl create secret generic deployment-enterprise-license --from-file=license.yaml=<PATH TO LICENSE.YAML>`
 ##
-licenseSecretName: anchore-hightower-demo-license
+licenseSecretName: anchore-demo-license
 
 ## @param certStoreSecretName Name of secret containing the certificates & keys used for SSL, SAML & CAs
 ## The chart will mount the secret specified in certStoreSecretName to /home/deployment/certs
@@ -377,7 +377,7 @@ anchoreConfig:
     ## Once enabled, the Anchore Analyzer services will look for a file with a specific name, location and format located within the container image - /anchore_hints.json
     ## ref: https://docs.anchore.com/current/docs/installation/configuration/content_hints/
     ##
-    enable_hints: false
+    enable_hints: true
 
     ## @param anchoreConfig.analyzer.configFile [object] Custom Anchore Analyzer configuration file contents in YAML
     ## This configuration file is used to configure regex matching, file content searching and malware scanning
@@ -415,7 +415,7 @@ anchoreConfig:
         ## Malware scanning occurs only at analysis time when the image content itself is available
       malware:
         clamav:
-          enabled: false
+          enabled: true
           db_update_enabled: true
 
   catalog:
@@ -1288,7 +1288,7 @@ simpleQueue:
 ui:
   ## @param ui.image Image used for the Anchore UI container
   ##
-  image: docker.io/anchore/webinar-content-test:enterprise-ui-hightower
+  image: docker.io/anchore/demo:enterprise-ui-s3c-demo-5.3
 
   ## @param ui.imagePullPolicy Image pull policy for Anchore UI image
   ##

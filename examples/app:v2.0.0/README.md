@@ -1,6 +1,7 @@
-# 2023-12-demo
+# Webinar App Demo 2.0.0
 
-Simple demo for Anchore Enterprise.
+Our Webinar Demo App has taken a turn for the worst. The team have completely refactored it. 
+The new app is now using all the latest technology the team has been reading about from cryptominers to log4j.
 
 Partial list of conditions that can be tested with this image:
 
