@@ -21,10 +21,15 @@ There are many scenarios around SBOM visibility, here are our top 10:
 
 An application starts life as code, and eventually (in the cloud native world) transforms into distributable container. 
 The end-to-end process is commonly referred to as the SDLC (Software Delivery Lifecycle), and across the different stages Anchore Enterprise can track and manage the SBOM.
-Let's now unpack how you can create, track and manage those SBOMS within Anchore.
+Let's now unpack how you can create, track and manage those SBOMs within Anchore.
 
 ### SBOM Visibility with Source Code
 
+Let's change into the directory containing the code that our dev team have just produced.
+Do checkout what's in this amazing Go application...
+```bash
+cd ./examples/app
+```
 Create a new Anchore application, with which we can associate source code and containers.
 ```bash
 anchorectl application add app --description "Webinar Demo App"
@@ -35,7 +40,6 @@ Review the first example application source code and generate an SBOM (locally) 
 Then we can map the source code reference and SBOM into Anchore. 
 This would be a typical task that gets carried out during CI.
 ```bash
-cd ./examples/app
 syft -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
 ```
 Now we associate the source artifact to our application tag HEAD. As you continuously integrate you also can update Anchore with the latest code. 
@@ -47,25 +51,36 @@ Now output the SBOM contents to screen in the table format. This could be useful
 anchorectl source sbom 10bfb040-5a53-417c-8648-4b22fbfd7ba9 -o table
 ```
 Check out the new application in the Web UI by visiting `/applications` and see the mapping over to our source control commit.
-Finally drill in and export an SBOM.
+Finally, please explore how you can export an SBOM.
+
+The team would repeat the above process for each commit they make in the code repository. 
+In fact, they could automate this, by adding these steps into their pipeline scripts.
 
 **Now we are ready for release v1.0.0!**
 
-Navigate to the v1.0.0 code in the repo for our example application. Now let's create a new release v1.0.0 for the 'app' in Anchore.
+The dev team have been working hard over a long sprint to add "Docker support"! 
+First let's look at these changes to the app
 ```bash
 cd ./examples/app:v1.0.0
+```
+As we did before, let's create a new release called v1.0.0 for the 'app' in Anchore.
+```bash
 anchorectl application version add app@v1.0.0
 ```
 Now let's build the SBOM for this release and associate a source artifact to our app v1.0.0 version. All in one line!
 ```bash
 syft -o json . | anchorectl source add github.com/anchore/webinar-demo@88ae9c020d4b730d510e97a31848e181c4934bf0 --branch 'v1.0.0' --author 'author-from-ci@example.com' --application 'app@v1.0.0' --workflow-name 'default' --from -
 ```
+This time they added some richer metadata to the source code associations.
+
 Check out the new application in the Web UI by visiting `/applications` and see the Dockerfile getting picked up.
 Finally drill in and export an SBOM.
 
+This release contained a Dockerfile, so lets move on to build an image.
+
 ### SBOM Visibility with Images
 
-Now that the v1.0.0 app has parsed ALL the unit & integration tests we are ready to bundle this software into a container as part of the CD process.
+Now that the v1.0.0 app has parsed ALL the unit & integration tests we are ready to bundle this software into an image as part of the CD process.
 
 Build the v1.0.0 app image locally and tag it as v1.0.0
 ```bash
@@ -94,14 +109,14 @@ Finally, let's associate this container image to v1.0.0 of the app in Anchore.
 ```bash
 anchorectl application artifact add app@v1.0.0 image sha256:5e08f037b46b8bbc670adb862857c6a581f1fba517143e8f855562ea16353140
 ```
-With that we have seen how both Source and Image SBOMS can be mapping to entities we call applications. 
+With that we have seen how both Source and Image SBOMs can be mapping to entities we call applications. 
 This helps you maintain provenance and history about your releases and the source and containers associated with them.
 
 ### SBOM Visibility with Multi-Architecture Images
 
-Another lens to cover with SBOMS for container images, is that Anchore can support multi-architecture images. 
+Another lens to cover with SBOMs for container images, is that Anchore can support multi-architecture images. 
 Perhaps you ship a product or container that needs to work across many types of architectures. 
-In any case, you will need to manage the SBOMS and associated security data and here Anchore can support your efforts. Let's run through an example
+In any case, you will need to manage the SBOMs and associated security data and here Anchore can support your efforts. Let's run through an example
 
 Submit image for addition to Anchore Enterprise (Anchore Enterprise will pull image from a public registry and perform full analysis)
 This is called centralized analysis. 
