@@ -7,12 +7,6 @@ volumes:
   anchore-enterprise-5.3-db:
     # Set this to 'true' to use an external volume. In which case, it must be created manually with "docker volume create anchore-db-volume"
     external: false
-  feeds-workspace-volume:
-    # Set this to 'true' to use an external volume. In which case, it must be created manually with "docker volume create feeds-workspace-volume"
-    external: false
-  enterprise-feeds-db-volume:
-    # Set this to 'true' to use an external volume. In which case, it must be created manually with "docker volume create enterprise-feeds-db-volume"
-    external: false
 
 services:
   # The primary API endpoint service
@@ -50,7 +44,7 @@ services:
       - anchore-db
     volumes:
       - ./license.yaml:/license.yaml:ro
-      #- ./config-engine.yaml:/config/config.yaml:z
+      #- ./config.yaml:/config/config.yaml:z
     logging:
       driver: "json-file"
       options:
@@ -165,7 +159,8 @@ services:
     volumes:
       - ./license.yaml:/license.yaml:ro
       - /analysis_scratch
-      #- ./config-engine.yaml:/config/config.yaml:z
+      - ./config.yaml:/config/config.yaml:z
+      - ./analyzer_config.yaml:/anchore_service/analyzer_config.yaml:z
     command: ["anchore-enterprise-manager", "service", "start", "analyzer"]
   anchore-db:
     image: docker.io/library/postgres:13

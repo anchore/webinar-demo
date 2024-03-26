@@ -1,4 +1,4 @@
-# Webinar App Demo 2.0.0
+# Webinar App Demo App 2.0.0
 
 Our Webinar Demo App has taken a turn for the worst. The team have completely refactored it. 
 The new app is now using all the latest technology the team has been reading about from cryptominers to log4j.
@@ -18,4 +18,4 @@ Partial list of conditions that can be tested with this image:
 
 Secret scanning and hints file handling for distributed scanning is configured in .anchorectl.yaml
 
-Learn more over at - https://github.com/pvnovarese/2023-12-demo
+Special thanks to Paul for this example. Please check out the 'og' here - https://github.com/pvnovarese/2023-12-demo

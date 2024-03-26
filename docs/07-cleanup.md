@@ -1,9 +1,12 @@
 # Cleanup
 
-Please continue testing Anchore Enterprise, you can easily add your own source, images and other integrations (such as JIRA, SSO and more).
-It's a great way to explore further and examine what the results and workflows could look like for you.
+If you would like, please continue testing Anchore Enterprise, you can easily add your own source, images and other integrations (such as CI/CD, SSO and more).
+It's a great way to kick the tyres a little further and examine what the results and workflows could look like for you.
 
-If you need to spin down resources, please check out the steps below.
+ - See some examples of CI/CD integrations - https://docs.anchore.com/current/docs/integration/ci_cd/
+ - Learn about SSO support - https://docs.anchore.com/current/docs/configuration/sso/ and context switching https://docs.anchore.com/current/docs/configuration/accounts/
+
+If you do however, need to spin down resources, please check out the steps below.
 
 ## Spin down your Anchore deployment
 
