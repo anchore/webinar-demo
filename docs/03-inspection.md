@@ -183,18 +183,20 @@ And with Anchore you have Base Image support where you can filter out results an
 Let's start by adding our base image, which is named 'base' with no originality in mind. Is it happens the app:v2.0.0 was using this image as a parent.
 ```bash
 anchorectl application add base --description "Webinar Demo Base Image"
-anchorectl application version add base@1.0.0
+anchorectl application version add base@v1.0.0
 cd ./examples/base:v1.0.0
 docker build . -t base:v1.0.0
 anchorectl image add base:v1.0.0 --from docker 
+anchorectl application artifact add base@v1.0.0 image sha256:f227723f265bcdf9adf8b72aeb84c0a384a29381c8afeb4211cba956de0b60ca
 ```
 
 Now we add the v3.0.0 image that uses base:v1.0.0 as it's base image
 ```bash
-anchorectl application version add base@3.0.0
-cd ./examples/base:v3.0.0
-docker build . -t base:v3.0.0
-anchorectl image add base:v3.0.0 --from docker 
+anchorectl application version add app@3.0.0
+cd ./examples/app:v3.0.0
+docker build . -t app:v3.0.0
+anchorectl image add app:v3.0.0 --from docker 
+anchorectl application artifact add app@v3.0.0 image sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056742fdcac96b858566f
 ```
 
 We can see the ancestors of our app:v2.0.0 or sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056742fdcac96b858566f image
