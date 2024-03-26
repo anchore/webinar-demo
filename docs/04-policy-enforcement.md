@@ -132,7 +132,11 @@ anchorectl image check --detail -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c
 Finally, Here is the outline of what needs to happen in essentially in all the CI/CD tools:
 
 ```bash
-# First do whatever normal image build steps you would do here
+# Foreach commit map your source code to an application version (used later to track sboms)
+anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
+# Do whatever normal image build steps you would do here
+# Now map the container artifact to the application release version (used for SBOM tracking)
+anchorectl application artifact add app@v2.0.0 image sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538
 # Now begin the analysis and evaluation of the image
 mkdir -p ${HOME}/.local/bin
 curl -sSfL  https://anchorectl-releases.anchore.io/anchorectl/install.sh  | sh -s -- -b $HOME/.local/bin  

@@ -23,7 +23,7 @@ An application starts life as code, and eventually (in the cloud native world) t
 The end-to-end process is commonly referred to as the SDLC (Software Delivery Lifecycle), and across the different stages Anchore Enterprise can track and manage the SBOM.
 Let's now unpack how you can create, track and manage those SBOMs within Anchore.
 
-### SBOM Visibility with Source Code
+### SBOM Visibility of source code
 
 Let's change into the directory containing the code that our dev team have just produced.
 Do checkout what's in this amazing Go application...
@@ -81,7 +81,7 @@ Finally drill in and export an SBOM.
 
 This release contained a Dockerfile, so lets move on to build an image.
 
-### SBOM Visibility with Images
+### SBOM Visibility of images
 
 Now that the v1.0.0 app has parsed ALL the unit & integration tests we are ready to bundle this software into an image as part of the CD process.
 
@@ -115,7 +115,7 @@ anchorectl application artifact add app@v1.0.0 image sha256:5e08f037b46b8bbc670a
 With that we have seen how both Source and Image SBOMs can be mapping to entities we call applications. 
 This helps you maintain provenance and history about your releases and the source and containers associated with them.
 
-### SBOM Visibility with Multi-Architecture Images
+### SBOM Visibility of multi-architecture images
 
 Another lens to cover with SBOMs for container images, is that Anchore can support multi-architecture images. 
 Perhaps you ship a product or container that needs to work across many types of architectures. 
@@ -140,7 +140,7 @@ You can see the new Architecture but also how this changed over time. This is wh
 Drift can help us detect deeper security issues, we will cover this more in a later lab on policy enforcement. 
 This can uncover changes in everything from Architecture changes like this example to more nuanced package changes.
 
-### SBOM Visibility with Watchers & Subscriptions
+### SBOM Visibility using watchers & subscriptions
 
 Anchore has the capability to monitor/watch external Docker Registries for updates to tags as well as new images pushed into a repository. 
 As new updates or images are found, they are automatically submitted for SBOM analysis and can later progress to onward stages.
@@ -220,7 +220,7 @@ Check out the events generated in the Web UI by visiting `/events`
 
 Watches and Subscriptions offer many possibilities and combined with notifications, you can start to build very powerful workflows.
 
-### SBOM Visibility with Hints
+### SBOM Visibility using content hints
 
 Now that v2.0.0 of the app has passed ALL the tests we are ready to build the container as part of the CD process and eventually delivery to pur production environment.
 However, we know that some bespoke packages are not getting discovered, and we want to manually flag or 'hint' that these exist. 
@@ -252,6 +252,40 @@ anchorectl application artifact add app@v2.0.0 image sha256:30c82fbf2de5a357a91f
 ```
 Anchore Enterprise includes the ability to read a user-supplied ‘hints’ file to allow users to add software artifacts to Anchore’s analysis report. The hints file, if present, contains records that describe a software package’s characteristics explicitly, and are then added to the software bill of materials (SBOM).
 You may have noticed but v2.0.0 has a hints file called anchore_hints.json. Check it out and also look in the UI/SBOM for these artifacts.
+
+### SBOM Visibility across an application
+
+We have so far explored how we can add source and container images and map those to an application and a release.
+No we will explore how we can use this 'indexing or cataloging' to solve a problem. 
+
+Now for our app:v2.0.0 application we have a dependency on two other containers nginx and postgres. Let's add these supporting containers
+```bash
+anchorectl image add docker.io/library/postgres:13
+anchorectl application artifact add app@v2.0.0 image sha256:8a8289d4999b47a5a9a585c775d33deadc43fa0a2a6b647c58cdaf1e59703977
+anchorectl image add docker.io/nginx:alpine3.18
+anchorectl application artifact add app@v2.0.0 image sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538
+```
+Now checkout the Web UI and under Application view the container sources for v2.0.0 of the app.
+
+You can also view some of the data via the AnchoreCTL
+```bash
+anchorectl application artifact list app@v2.0.0
+✔ List artifacts
+┌─────────────────────────────────┬────────┬─────────────────────────────────────────────────────────────────────────┐
+│ DESCRIPTION                     │ TYPE   │ HASH                                                                    │
+├─────────────────────────────────┼────────┼─────────────────────────────────────────────────────────────────────────┤
+│ rhel:9.3                        │ image  │ sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa │
+│ debian:12                       │ image  │ sha256:8a8289d4999b47a5a9a585c775d33deadc43fa0a2a6b647c58cdaf1e59703977 │
+│ alpine:3.18.6                   │ image  │ sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538 │
+│ github.com/anchore/webinar-demo │ source │ 106c2d9fffe01f564d889763d904cace7f32be3f                                │
+└─────────────────────────────────┴────────┴─────────────────────────────────────────────────────────────────────────┘
+```
+Finally, you can request an SBOM for the entire application suite for version 2.0.0 with the following command.
+```bash
+anchorectl application sbom app@v2.0.0 > all_the_sboms_appv2.0.0.json
+```
+This is helpful, when for example, your customer asks for an app wide SBOM. You don't need to do individual requests. You can perform one bulk action. 
+Equally, if you need a single SBOM for just one container you can request this too and with application management you can ensure you request the correct one.
 
 > [!TIP]
 > For a visual walkthrough checkout the [visibility workshop materials](https://viperr.anchore.com/visibility/).
