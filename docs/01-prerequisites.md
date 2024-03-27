@@ -48,7 +48,7 @@ Pull the images from the Registry
 docker pull docker.io/anchore/demo:enterprise-s3c-demo-5.3
 ```
 ```bash
-docker pull docker.io/anchore/webinar-content-test:enterprise-ui-hightower
+docker pull docker.io/anchore/demo:enterprise-ui-s3c-demo-5.3
 ```
 Run docker compose and spin up Anchore Enterprise
 ```bash
