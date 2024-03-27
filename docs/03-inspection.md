@@ -248,7 +248,7 @@ In addition, you can also scan a container for malware to catch situations where
 
 Anchore can be configured to look for these unknowns as well as known matches with regexes, and it can be configured to do this locally (when scanning an image in distributed mode) as well as the core Anchore deployment itself ( centralized mode ). 
 
-> [!INFO]
+> [!NOTE]
 > For malware checks these can only be run in centralized mode. Anchore must pull the image and scan server-side in order to check each file.
 > Malware, secrets and retrieved files have been enabled in this webinar demo and pre-configured. Content search has been disabled.
 
@@ -322,7 +322,7 @@ Malware:
 ```
 Oh, dear... it looks like this image has some malware baked in. We better not deploy this!
 
-> [!INFO]
+> [!TIP]
 > You can see ALL of this information in the web UI for the image in question under the SBOM navigation tab.
 > Later you will learn how this information can be used at a policy enforcement level.
 

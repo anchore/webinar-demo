@@ -123,7 +123,7 @@ Reason: policy_evaluation
 error: 1 error occurred:
 * failed policies:
 ```
-> [!INFO]
+> [!IMPORTANT]
 > This sets the exit code to 1 if the policy evaluation result is "fail" (useful for breaking pipelines as a gating mechanism)
 
 Here is what a pass with warn looks like (after I changed the policy that was active)
@@ -143,7 +143,7 @@ Reason: policy_evaluation
 > [!TIP]
 > It is recommended to use the specific image digest rather than image tag when performing an 'anchorectl image check'
 
-Finally, Here is the outline of what needs to happen in essentially in all the CI/CD tools:
+Finally, here is an outline of what needs to happen in essentially in all the CI/CD tools:
 ```bash
 # Setup the anchorectl in the pipeline environment
 mkdir -p ${HOME}/.local/bin

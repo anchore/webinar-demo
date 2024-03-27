@@ -45,7 +45,7 @@ This would be a typical task that gets carried out during CI.
 ```bash
 anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
 ```
-> [!INFO]
+> [!TIP]
 > If you already have Syft installed you can use it $ syft -o json . | anchorectl source add ...
 
 Now we associate the source artifact to our application tag HEAD. As you continuously integrate you also can update Anchore with the latest code. 
