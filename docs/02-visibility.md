@@ -37,7 +37,8 @@ Create a new Anchore application, with which we can associate source code and co
 ```bash
 anchorectl application add app --description "Webinar Demo App"
 ```
-> NOTE! - you can only currently add, edit and delete applications via the anchorectl or Anchore API
+> [!NOTE]
+> You can only currently - add, edit and delete applications via the anchorectl or Anchore API
 
 Review the first example application source code and generate an SBOM (locally) for it. 
 Then we can map the source code reference and SBOM into Anchore. 
@@ -136,7 +137,8 @@ Let's now re-add the CentOS image, but this time be specific and add only the AR
 ```bash
 anchorectl image add docker.io/centos:latest --from registry --platform  arm64 --force
 ```
-> NOTE: Remember --force tells Anchore Enterprise to reanalyse from the image. And not just reload the latest vulnerabilities.
+> [!NOTE]
+> Remember `--force` tells Anchore Enterprise to reanalyse from the image. And not just reload the latest vulnerabilities.
 
 Check the Web UI once again to see the arm64 architecture in the Image SHA and also check out the Changelog tab.
 You can see the new Architecture but also how this changed over time. This is what we call SBOM drift. 
@@ -236,6 +238,7 @@ anchorectl image add docker.io/centos:7
 ```
 Check out the events generated in the Web UI by visiting `/events`
 
+> [!TIP]
 > If you want to send an event notification from a subscription to an endpoint, please review our [UI Walkthrough](https://docs.anchore.com/current/docs/configuration/notifications/#notifications-ui-walktrough) docs.
 
 Watches and Subscriptions offer many possibilities and combined with notifications, you can start to build very powerful workflows.

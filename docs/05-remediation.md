@@ -62,8 +62,8 @@ Begin continuous updates of policy evaluation
 ```bash
 anchorectl subscription activate ${IMAGE_NAME} policy_eval   
 ```
-> [!NOTE] You will need to set up a notification endpoint.
-
+> [!IMPORTANT] 
+> You will need to set up and configure a notification endpoint to receive these events.
 
 ### Remediation using alerts on image tags
 
@@ -79,7 +79,8 @@ Once all findings are addressed the alert is closed, allowing for an efficient w
     - GET /alerts/summaries - List all alert summaries scoped to the account
     - PATCH /alerts/compliance-violations/{uuid} - Open or close a compliance violation alert
 
-> [!NOTE] No notification can be generated from this, and there is no anchorectl support instead the only options are the UI and Alerts API.
+> [!NOTE] 
+> No notification can be generated from this, and there is no anchorectl support instead the only options are the UI and Alerts API.
 
 This raises a clear notification in the UI to help initiate the remediation workflow and address the violations via the remediation feature. Once all findings are addressed the alert is closed, allowing an efficient workflow for users to bring their image’s into compliance with their policy.
 

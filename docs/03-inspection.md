@@ -25,7 +25,7 @@ Inspecting the results of SBOMs and vulnerabilities across source applications a
 
 ## Lab Exercises
 
-### Inspection of Feed Sources
+### Inspection of feed sources
 Anchore Enterprise uses security vulnerability data from a number of different sources from NVD to more specific sources such as GHSA (GitHub Advisory Database) and vendor specific sources.
 The Anchore Feed Service collects this vulnerability source data and normalizes it into a dataset, which in turn is used to show vulnerabilities for specific images/source and well as used by the Policy Engine to evaluate policies and make decisions.
 For the demo environment, don't worry we have pre-configured and bundled this vulnerability dataset for you. The demo does however, miss some enterprise sources such as MSRC and Anchore's own exclusions' data.
@@ -88,7 +88,7 @@ Keeping Anchore fresh with relevant data is one of the key tenants of the produc
 > [!TIP]
 > We can also see this feed information in the Web UI under `system` when logged in as Admin.
 
-## Inspection of Vulnerabilities
+## Inspection of vulnerabilities
 
 During the analysis of container images, Anchore Enterprise performs deep inspection, collecting data on all artifacts in the image including files, operating system packages and software artifacts such as Ruby GEMs and Node.JS NPM modules.
 
@@ -196,7 +196,7 @@ We should really get someone to check this package out a little more...
 
 > We can also see this vuln information in the Web UI under `image` or via the `application` page.
 
-### Inspection of Base Image(s)
+### Inspection of base image(s)
 
 Container images often include a parent or base image (the FROM syntax). This is typically an OS image like Ubuntu or Alpine but it could be a corporate or application 'golden image' provided with a bunch of standardised software.
 In either case, it's helpful to be able to separate out, where did this policy, vulnerability of otherwise originate from.
@@ -249,7 +249,7 @@ In addition, you can also scan a container for malware to catch situations where
 Anchore can be configured to look for these unknowns as well as known matches with regexes, and it can be configured to do this locally (when scanning an image in distributed mode) as well as the core Anchore deployment itself ( centralized mode ). 
 
 > [!NOTE]
-> For malware checks these can only be run in centralized mode. Anchore must pull the image and scan server-side in order to check each file.
+> Malware checks can only be run in centralized mode. Anchore must pull the image and scan server-side in order to check each file.
 > Malware, secrets and retrieved files have been enabled in this webinar demo and pre-configured. Content search has been disabled.
 
 Let's check if we have any secrets in our v2.0.0 app?
