@@ -17,6 +17,9 @@ The capabilities here can can support many use-cases and here are our top 10:
 9. Automated remediation responses to stakeholders
 10. Create timeouts for remediation using policy
 
+> [!TIP]
+> For a visual walkthrough checkout the [Remediation workshop materials](https://viperr.anchore.com/remediation/).
+
 ## Lab Exercises
 
 ### Remediation with the Action Workbench
@@ -30,7 +33,7 @@ Add some notes and then press Add item to the Action Workbench.
 Now in the tab click on Action Workbench, from here you can push out these actions to an endpoint such as GitHub issues or a custom webhook
 
 > You can switch between policies by clicking on the right hand side dropdown view on the policy compliance page. 
-> However, please note when the non-active policy is selected, you are only previewing the artifact evaluation output produced selected policy.
+> However, please note when the non-active policy is selected, you are only previewing the artifact evaluation output produced by the selected policy.
 
 ### Remediation for a limited time only...
 
@@ -59,13 +62,27 @@ Begin continuous updates of policy evaluation
 ```bash
 anchorectl subscription activate ${IMAGE_NAME} policy_eval   
 ```
-
-In either case, if new vulnerability matches are found or the pass/fail policy result changes, an event is created which can trigger notifications, hit a webhook, etc.
-
 > [!NOTE] You will need to set up a notification endpoint.
 
 
-> [!TIP]
-> For a visual walkthrough checkout the [Remediation workshop materials](https://viperr.anchore.com/remediation/).
+### Remediation using alerts on image tags
+
+The UI and API can be configured to show stateful alerts that are raised for policy violations on tags to which you are subscribed for.
+This raises a clear notification in the UI on the home dashboard to help initiate the remediation workflow and address the violations via the remediation feature. 
+It also provides an API for which you can query and update to provide some external remediation integration/workflow.
+Once all findings are addressed the alert is closed, allowing for an efficient workflow for users to bring their image's into compliance with their policy.
+
+- Web UI - Home Dashboard
+- Alerts API - Account-level alerting
+    - GET /alerts/compliance-violations - List all compliance violation alerts scoped to the account
+    - GET /alerts/compliance-violations/{uuid} - Get compliance violation alert by id
+    - GET /alerts/summaries - List all alert summaries scoped to the account
+    - PATCH /alerts/compliance-violations/{uuid} - Open or close a compliance violation alert
+
+> [!NOTE] No notification can be generated from this, and there is no anchorectl support instead the only options are the UI and Alerts API.
+
+This raises a clear notification in the UI to help initiate the remediation workflow and address the violations via the remediation feature. Once all findings are addressed the alert is closed, allowing an efficient workflow for users to bring their image’s into compliance with their policy.
+
+## Next Lab
 
 Next: [Reporting](06-reporting.md)

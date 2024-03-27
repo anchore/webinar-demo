@@ -24,7 +24,7 @@ Please follow the instructions you have received via email.
 ## Ways to learn more about Anchore Enterprise
 
 Anchore supports many use cases, configurations and environments. 
-The labs in this demo covered some common uses cases, there are however many more, from how to support specific language ecosystems to how to enable enterprise level features.
+The labs in this demo covered some common use cases, there are however many more, from how to support specific language ecosystems to how to enable enterprise level features.
 
 For this you can review our Docs, Webinars, and also reach out directly.
 

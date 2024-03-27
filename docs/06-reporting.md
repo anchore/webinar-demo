@@ -19,11 +19,14 @@ Below are the top 10 capabilities for how Anchore delivers reporting:
 9. Included Reports in Risk Assessment/Risk Mgmt Process
 10. Regularly update reporting mechanisms for new checks
 
+> [!TIP]
+> For a visual walkthrough checkout the [Reporting workshop materials](https://viperr.anchore.com/reporting/) (_there are some slight differences on ui_).
+
 ## Lab Exercises
 
-For this lab we turn to some Web UI work to generate some reports that will help unpack some of the capabilities on offer. 
-Reports can be saved, run on a schedule and made into a template for others to use. 
-Additionally, you can download your report results as JSON or CSV and setup notifications to webhooks to be notified when a report has been generated.
+For this lab, we turn to the Web UI to generate reports that will help surface some of the capabilities and information on offer to help you manage your software. 
+Reports can be created and managed in many ways: They can be saved, run on a schedule and made into a template for others to use. 
+Additionally, you can download your report results as JSON or CSV and set up notifications to webhooks to be notified when a report has been generated.
 
 > Note: with reporting there is no direct anchorectl support, instead reports are built and managed in the Web UI itself under `/reports` tab in the top navigation.
 
@@ -39,7 +42,6 @@ Here are some objectives to try yourself:
 
 Please review the docs for extra details and examples to guide you https://docs.anchore.com/current/docs/vulnerability_management/reports/
 
-> [!TIP]
-> For a visual walkthrough checkout the [Reporting workshop materials](https://viperr.anchore.com/reporting/) (_there are some slight differences on ui_).
+## Next Lab
 
 Next: [Clean Up](07-cleanup.md)

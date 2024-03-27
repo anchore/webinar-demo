@@ -2,11 +2,12 @@
 
 Security checks inspecting for vulnerabilities, secrets, permissions, and malware.
 
-In the previous lab, we looked at Anchore's SBOM capability and vital foundation for exploring the impacts of our software. 
-In this lab we will do deeper and inspect these results and also cover how vulnerability feed source information is gathered and is made available and can enrich our SBOMs.
+In the previous lab, we looked into the SBOM capability as a vital foundation for gaining visibility into our software and containers. 
+In this lab, we will explore deeper and inspect this data to uncover useful information that can aid compliance and/or security.
+To achieve this, you need vulnerability feed data, and for this we briefly touch on how feed source information is gathered and made available to enrich the SBOMs.
 Just like SBOM data, vulnerability data is foundational and without it, you won't have accurate data to make informed decisions.
 
-Inspecting the results of your SBOMs and Vulnerabilities across source applications and containers can help you identify many issues, here are our top 10:
+Inspecting the results of SBOMs and vulnerabilities across source applications and containers can help you identify many issues, here are our top 10:
 
 1. Inspect files for malicious content
 2. Inspect packages for malicious content
@@ -19,19 +20,25 @@ Inspecting the results of your SBOMs and Vulnerabilities across source applicati
 9. Inspect for vulns inherited by base images
 10. Inspect relational analysis to identify vulns across images and stages
 
+> [!TIP]
+> For a visual walkthrough checkout the [inspection workshop materials](https://viperr.anchore.com/inspection/).
+
 ## Lab Exercises
 
 ### Inspection of Feed Sources
-Anchore Enterprise uses security vulnerability data from a number of different sources from NVD to more specific source such as GHSA (GitHub Advisory Database) and vendor specific sources.
+Anchore Enterprise uses security vulnerability data from a number of different sources from NVD to more specific sources such as GHSA (GitHub Advisory Database) and vendor specific sources.
 The Anchore Feed Service collects this vulnerability source data and normalizes it into a dataset, which in turn is used to show vulnerabilities for specific images/source and well as used by the Policy Engine to evaluate policies and make decisions.
 For the demo environment, don't worry we have pre-configured and bundled this vulnerability dataset for you. The demo does however, miss some enterprise sources such as MSRC and Anchore's own exclusions' data.
 
 Anchore prefers to use the most specific data to enable the best possible vulnerability findings. For example, whilst a general CVE might apply to a particular version of Bash, the way an OS vendor like Ubuntu could install Bash, might mean that the general CVE has a lower risk and rating.
-Having up to date, relevant and specific vulnerability data is paramount. In combinations with accurate SBOMs, the correctness of vulnerability data helps steer you away from false positives and false negatives and get you the insights about the software that you need.
+Having up to date, relevant and specific vulnerability data is paramount. In combination with accurate SBOMs, the correctness of vulnerability data helps steer you away from false positives and false negatives and get you the insights about the software that you need.
 
 Let's first check what vulnerability data we have in our new deployment. Is it up to date? Does it cover what we need?
 ```bash
 anchorectl feed list
+```
+Output
+```
 ┌─────────────────┬────────────────────┬─────────┬──────────────────────┬──────────────┐
 │ FEED            │ GROUP              │ ENABLED │ LAST SYNC            │ RECORD COUNT │
 ├─────────────────┼────────────────────┼─────────┼──────────────────────┼──────────────┤
@@ -85,9 +92,12 @@ Keeping Anchore fresh with relevant data is one of the key tenants of the produc
 
 During the analysis of container images, Anchore Enterprise performs deep inspection, collecting data on all artifacts in the image including files, operating system packages and software artifacts such as Ruby GEMs and Node.JS NPM modules.
 
-When we add an image, it takes time to analyze. We can find out if that analysis has completed. We could run this with --wait if we put this into a pipeline.
+When we add an image, it takes time to analyze. We can find out if that analysis has been completed. We could run this with --wait if we put this into a pipeline.
 ```bash
 anchorectl image get app:v2.0.0
+```
+Output
+```
 Tag: docker.io/app:v2.0.0
 Digest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
 ParentDigest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
@@ -98,6 +108,9 @@ Status: active
 We could then show OS, Non-OS or ALL the vulnerabilities we find.
 ```bash
 anchorectl image vulnerabilities app:v2.0.0 -a
+```
+Output 
+```
 all
 non-os
 os
@@ -106,6 +119,9 @@ os
 Let's grab the Non-OS vulns in a table format (handy for pipeline output)
 ```bash
 anchorectl image vulnerabilities app:v2.0.0 -t non-os
+```
+Output
+```
 ┌─────────────────────┬──────────┬──────────────────────────────────┬────────────────────────────────────┬────────┬──────────────┬────────┬───────────────┬────────────────┬───────────────────────────────────────────────────┐
 │ ID                  │ SEVERITY │ NAME                             │ VERSION                            │ FIX    │ WILL NOT FIX │ TYPE   │ FEED GROUP    │ CVES           │ URL                                               │
 ├─────────────────────┼──────────┼──────────────────────────────────┼────────────────────────────────────┼────────┼──────────────┼────────┼───────────────┼────────────────┼───────────────────────────────────────────────────┤
@@ -145,6 +161,9 @@ anchorectl image vulnerabilities app:v2.0.0 -t non-os
 We can inspect an image from other "view points" as well. This can be handy to trigger rules, checks or steps, based on what is discovered
 ```bash
 anchorectl image content app:v2.0.0 -a
+```
+Output
+```
 binary
 content_search
 files
@@ -163,6 +182,9 @@ secret_search
 Now let's check out something specific.
 ```bash
 anchorectl image content app:v2.0.0 -t java
+```
+Output
+```
 Java Packages:
 ┌────────────┬───────────────┬───────────────┬───────────────┬──────────┬──────────────────────────┬────────────────────────┬─────────┐
 │ PACKAGE    │ IMPL. VERSION │ SPEC. VERSION │ MAVEN VERSION │ TYPE     │ ORIGIN                   │ LOCATION               │ VERSION │
@@ -199,9 +221,12 @@ anchorectl image add app:v3.0.0 --from docker
 anchorectl application artifact add app@v3.0.0 image sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056742fdcac96b858566f
 ```
 
-We can see the ancestors of our app:v2.0.0 or sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056742fdcac96b858566f image
+We can see the ancestors of our app:v3.0.0 (here we use the image digest)
 ```bash
 anchorectl image ancestors sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056742fdcac96b858566f
+```
+Output
+```
  ✔ Fetched ancestors
 ┌─────────────────────────────────────────────────────────────────────────┬─────────────────────────────────────────────────────────────────────────┬───────────────────────┐
 │ ANCESTOR IMAGE DIGEST                                                   │ LAYERS                                                                  │ TAGS                  │
@@ -211,26 +236,28 @@ anchorectl image ancestors sha256:a1859b0140f89e546670f493e2966d09e1c48bbc09e056
 │                                                                         │ sha256:b0d0e74e8939f17782fd628559705564fdf75512d4f5de23e9a70ef140d57415 │                       │
 └─────────────────────────────────────────────────────────────────────────┴─────────────────────────────────────────────────────────────────────────┴───────────────────────┘
 ```
-The UI here is useful, under vulnerabilities click on `CVEs Not Inherited From Base`. which will filter out and ignore base image vulnerabilities. 
+The web UI here is useful, under vulnerabilities click on `CVEs Not Inherited From Base`. which will filter out and ignore base image vulnerabilities. 
 Helping you focus on the application containers issues and avoid the wider noise, which can be targeted in other processes.
 
 > Learn more about [base images](https://docs.anchore.com/current/docs/overview/concepts/images/base_images/)
 
-## Inspection of Secrets, Retrieved Files/Content And Malware
+## Inspection of secrets, retrieved files, file content and malware
 
 You can configure Anchore to scan for secrets (like AWS_ACCESS_KEY for example) as well as files and/or content in files that perhaps you might want to block from your containers.
-In addition, you can also scan a container for malware to catch situations where a binary with questionable provenance could make it into your pipeline (for example a cyptominer)
+In addition, you can also scan a container for malware to catch situations where a binary with questionable provenance could make it into your pipeline (for example a cyptominer).
 
 Anchore can be configured to look for these unknowns as well as known matches with regexes, and it can be configured to do this locally (when scanning an image in distributed mode) as well as the core Anchore deployment itself ( centralized mode ). 
 
-> NOTE: For malware checks these can only be run in centralized mode. Anchore must pull the image and scan server-side in order to check each file.
-
-Both Malware, Secrets and Retrieved files have been enabled in this webinar demo and pre-configured.
+> [!INFO]
+> For malware checks these can only be run in centralized mode. Anchore must pull the image and scan server-side in order to check each file.
+> Malware, secrets and retrieved files have been enabled in this webinar demo and pre-configured. Content search has been disabled.
 
 Let's check if we have any secrets in our v2.0.0 app?
 ```bash
 anchorectl image content app:v2.0.0 -t secret_search
-✔ Fetched content                           [0 packages] [0 files] [7 secret search matches]                                                 app:v2.0.0
+```
+Output
+```
 Secret Search:
 ┌────────────────┬─────────────────────────────────────────────────────────────┬────────────┐
 │ SEARCH NAME    │ PATH                                                        │ AT LINE(S) │
@@ -260,7 +287,9 @@ Oh dear, looks like we found a few issues. This was found using the following re
 Let's list retrieve some known files
 ```bash
 anchorectl image content centos:latest -t retrieved_files
-✔ Fetched content                           [0 packages] [0 files] [1 retrieved files]                                                    centos:latest
+```
+Output
+```
 Retrieved Files:
 ┌─────────────┐
 │ PATH        │
@@ -278,9 +307,11 @@ Oh dear, looks like we added a password file. This was found using the following
 ```
 Finally, with malware we need to analyze in centralized mode and therefore need to pull an image from a registry.
 ```bash
-anchorectl image add docker.io/danperry/app:v2.0.0
+anchorectl image add docker.io/danperry/app:v2.0.0 --wait
 anchorectl image content docker.io/danperry/app:v2.0.0 -t malware
- ✔ Fetched content                           [0 packages] [0 files] [2 malware]                                           docker.io/danperry/app:v2.0.0
+```
+Output
+```
 Malware:
 ┌─────────┬──────────────────────────────────────────┬──────────────┐
 │ SCANNER │ MATCHED SIGNATURE                        │ PATH         │
@@ -289,11 +320,12 @@ Malware:
 │ clamav  │ Multios.Coinminer.Miner-6781728-2        │ /xmrig/xmrig │
 └─────────┴──────────────────────────────────────────┴──────────────┘
 ```
+Oh, dear... it looks like this image has some malware baked in. We better not deploy this!
 
-You can see ALL of this information in the Web UI for the image in question under the SBOM navigation tab.
-Later you will learn how this information can be used at a policy enforcement level.
+> [!INFO]
+> You can see ALL of this information in the web UI for the image in question under the SBOM navigation tab.
+> Later you will learn how this information can be used at a policy enforcement level.
 
-> [!TIP]
-> For a visual walkthrough checkout the [inspection workshop materials](https://viperr.anchore.com/inspection/).
+## Next Lab
 
 Next: [Policy Enforcement](04-policy-enforcement.md)

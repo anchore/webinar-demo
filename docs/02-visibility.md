@@ -17,16 +17,19 @@ There are many goals around SBOM visibility, here are our top 10:
 9. Identification of relevant image/pkg metadata
 10. Collect, safeguard, maintain, and share provenance data for all components of each software release
 
+> [!TIP]
+> For a visual walkthrough checkout the [visibility workshop materials](https://viperr.anchore.com/visibility/).
+
 ## Lab Exercises
 
-An application starts life as code, and eventually (in the cloud native world) transforms into distributable container. 
+An application starts life as code, and eventually (in the cloud native world) transforms into a distributable container. 
 The end-to-end process is commonly referred to as the SDLC (Software Delivery Lifecycle), and across the different stages Anchore Enterprise can track and manage the SBOM.
 Let's now unpack how you can create, track and manage those SBOMs within Anchore.
 
 ### SBOM Visibility of source code
 
 Let's change into the directory containing the code that our dev team have just produced.
-Do checkout what's in this amazing Go application...
+Do check out what's in this amazing Go application...
 ```bash
 cd ./examples/app
 ```
@@ -61,7 +64,7 @@ In fact, they could automate this, by adding these steps into their pipeline scr
 
 **Now we are ready for release v1.0.0!**
 
-The dev team have been working hard over a long sprint to add "Docker support"! 
+The dev team has been working hard over a long sprint to add "Docker support"! 
 First let's look at these changes to the app
 ```bash
 cd ./examples/app:v1.0.0
@@ -79,7 +82,7 @@ This time they added some richer metadata to the source code associations.
 Check out the new application in the Web UI by visiting `/applications` and see the Dockerfile getting picked up.
 Finally drill in and export an SBOM.
 
-This release contained a Dockerfile, so lets move on to build an image.
+This release contained a Dockerfile, so let's move on to build an image.
 
 ### SBOM Visibility of images
 
@@ -112,7 +115,7 @@ Finally, let's associate this container image to v1.0.0 of the app in Anchore.
 ```bash
 anchorectl application artifact add app@v1.0.0 image sha256:5e08f037b46b8bbc670adb862857c6a581f1fba517143e8f855562ea16353140
 ```
-With that we have seen how both Source and Image SBOMs can be mapping to entities we call applications. 
+With that we have seen how both Source and Image SBOMs can be mapped to entities we call applications. 
 This helps you maintain provenance and history about your releases and the source and containers associated with them.
 
 ### SBOM Visibility of multi-architecture images
@@ -142,9 +145,11 @@ This can uncover changes in everything from Architecture changes like this examp
 
 ### SBOM Visibility using watchers & subscriptions
 
-Anchore has the capability to monitor/watch external Docker Registries for updates to tags as well as new images pushed into a repository. 
+Anchore has the capability to monitor/watch external:
+ - Docker Registries for updates to tags as well as new images pushed into a repository. 
+ - Runtime environments such as Kubernetes and ECS for containers deployed into those environments.
 As new updates or images are found, they are automatically submitted for SBOM analysis and can later progress to onward stages.
-Then you can, if required, set up a subscription which will generate a notification when the event is triggered, such as new tag, or policy/vulnerability update. 
+Then you can, if required, set up a subscription which will generate a notification when the event is triggered, such as a new tag, or policy/vulnerability update. 
 For example, when a new image has been added to the registry or when Anchore has spotted a new vulnerability, submit a notice to the configured JIRA endpoint.
 
 Let's run through an example:
@@ -152,6 +157,9 @@ Let's run through an example:
 Check if we are watching the repo we have scanned (in this case we are not)
 ```bash
 anchorectl repo add --dry-run docker.io/danperry/nocode
+```
+Output
+```
  ✔ Added repo
 ┌───────────────────────────┬─────────────┬────────┐
 │ KEY                       │ TYPE        │ ACTIVE │
@@ -161,7 +169,10 @@ anchorectl repo add --dry-run docker.io/danperry/nocode
 ```
 We can subscribe to every new tag, or in this case any change being submitted to the repository
 ```bash
- anchorectl repo add --auto-subscribe docker.io/danperry/nocode
+anchorectl repo add --auto-subscribe docker.io/danperry/nocode
+```
+Output
+```
 ✔ Added repo
 ┌───────────────────────────┬─────────────┬────────┐
 │ KEY                       │ TYPE        │ ACTIVE │
@@ -172,7 +183,10 @@ We can subscribe to every new tag, or in this case any change being submitted to
 We can not only watch for new tags as they are pushed into the registry.
 But we can also add a subscription that will trigger an event and downstream notification.
 ```bash
-➜  ~ anchorectl subscription list
+anchorectl subscription list
+```
+Output
+```
 ✔ Fetched subscriptions
 ┌─────────────────────────────────┬─────────────────┬────────┐
 │ KEY                             │ TYPE            │ ACTIVE │
@@ -183,7 +197,10 @@ But we can also add a subscription that will trigger an event and downstream not
 ```
 Let's activate the tag_update subscription
 ```bash
-➜  ~ anchorectl subscription activate docker.io/danperry/nocode:1.0.0 tag_update
+anchorectl subscription activate docker.io/danperry/nocode:1.0.0 tag_update
+```
+Output
+```
 ✔ Activate subscription
 Key: docker.io/danperry/nocode:1.0.0
 Type: tag_update
@@ -192,7 +209,10 @@ Active: true
 ```
 Finally, we can list all of our subscriptions to see the state of play.
 ```bash
-➜  ~ anchorectl subscription list
+anchorectl subscription list
+```
+Output
+```
 ✔ Fetched subscriptions
 ┌─────────────────────────────────┬─────────────────┬────────┐
 │ KEY                             │ TYPE            │ ACTIVE │
@@ -222,7 +242,7 @@ Watches and Subscriptions offer many possibilities and combined with notificatio
 
 ### SBOM Visibility using content hints
 
-Now that v2.0.0 of the app has passed ALL the tests we are ready to build the container as part of the CD process and eventually delivery to pur production environment.
+Now that v2.0.0 of the app has passed ALL the tests we are ready to build the container as part of the CD process and deliver the artifact to our production environment.
 However, we know that some bespoke packages are not getting discovered, and we want to manually flag or 'hint' that these exist. 
 We can achieve this by adding a hints json file that contains the metadata anchore can detect and process.
 
@@ -256,7 +276,7 @@ You may have noticed but v2.0.0 has a hints file called anchore_hints.json. Chec
 ### SBOM Visibility across an application
 
 We have so far explored how we can add source and container images and map those to an application and a release.
-No we will explore how we can use this 'indexing or cataloging' to solve a problem. 
+Now we will explore how we can use this 'indexing or cataloging' to solve a problem. 
 
 Now for our app:v2.0.0 application we have a dependency on two other containers nginx and postgres. Let's add these supporting containers
 ```bash
@@ -270,6 +290,9 @@ Now checkout the Web UI and under Application view the container sources for v2.
 You can also view some of the data via the AnchoreCTL
 ```bash
 anchorectl application artifact list app@v2.0.0
+```
+Output
+```
 ✔ List artifacts
 ┌─────────────────────────────────┬────────┬─────────────────────────────────────────────────────────────────────────┐
 │ DESCRIPTION                     │ TYPE   │ HASH                                                                    │
@@ -287,7 +310,6 @@ anchorectl application sbom app@v2.0.0 > all_the_sboms_appv2.0.0.json
 This is helpful, when for example, your customer asks for an app wide SBOM. You don't need to do individual requests. You can perform one bulk action. 
 Equally, if you need a single SBOM for just one container you can request this too and with application management you can ensure you request the correct one.
 
-> [!TIP]
-> For a visual walkthrough checkout the [visibility workshop materials](https://viperr.anchore.com/visibility/).
+## Next Lab
 
 Next: [Inspection](03-inspection.md)

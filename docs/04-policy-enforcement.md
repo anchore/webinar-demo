@@ -20,11 +20,14 @@ Policy enforcement can be applied at any stage in the development process, from 
 9. Policy blocks unauthorized images reaching registry
 10. Don’t pass builds that violate CVE thresholds
 
+> [!TIP]
+> For a visual walkthrough checkout the [Policy enforcement workshop materials](https://viperr.anchore.com/policy/).
+
 ## Lab Exercises
 
 Once an image has been analyzed and its content has been discovered, categorized, and processed, the results can be evaluated against a user-defined set of checks to give a final pass/fail recommendation for an image. Anchore Enterprise policies are how users describe which checks to perform on what images and how the results should be interpreted.
 
-A policy is made up from a set of rules that are used to perform an evaluation a container image. The rules can define checks against an image for things such as:
+A policy is made up from a set of rules that are used to perform an evaluation of a container image. The rules can define checks against an image for things such as:
 
 - Security vulnerabilities
 - Package allowlists and denylists
@@ -33,18 +36,21 @@ A policy is made up from a set of rules that are used to perform an evaluation a
 - Image manifest changes
 - Exposed ports
 
-### Policy Enforcement - Creation & Management of Policies
+### Policy Enforcement - creation & management of policies
 
-Anchore comes with some policies out of the box and, you can create a flexible policy yourself to build a policy enforcement strategy that works for you.
+Anchore comes with some policies out of the box and you can create a flexible policy yourself to build a policy enforcement strategy that works for you.
 These are stored as json files and can be moved / shared between Anchore deployments too.
 
 Anchore also has prebuilt policy bundles to offer, that meet a [wide range](https://docs.anchore.com/current/docs/overview/capabilities/#anchore-enterprise-policy-packs) of compliance measures such as NIST, FedRAMP, SSDF and many more.
 
-To understand Anchore polices, rules (triggers and gates), mappings, allow lists and more, please review our detailed [UI policies guide](https://docs.anchore.com/current/docs/compliance_management/policy_overview_ui/).
+To understand Anchore policies, rules (triggers and gates), mappings, allow lists and more, please review our detailed [UI policies guide](https://docs.anchore.com/current/docs/compliance_management/policy_overview_ui/).
 
 We can switch to inspecting the current policies in place with the following anchorectl commands.
 ```bash
 anchorectl policy list
+```
+Output
+```
 ┌─────────────────────────┬──────────────────────────────────────┬────────┬──────────────────────┐
 │ NAME                    │ POLICY ID                            │ ACTIVE │ UPDATED              │
 ├─────────────────────────┼──────────────────────────────────────┼────────┼──────────────────────┤
@@ -58,7 +64,9 @@ As you can see only the CIS one is active.
 Let's activate the default policy as this has checks for source code.
 ```bash
 anchorectl policy activate 2c53a13c-1765-11e8-82ef-23527761d060
-
+```
+Output
+```
 Name: Default policy
 Policy Id: 2c53a13c-1765-11e8-82ef-23527761d060
 Active: true
@@ -72,7 +80,7 @@ Anchore Enterprise provides a mechanism to compare the policy checks and securit
 - filter out results that are inherited from a base image and focus on the results relevant to the application image
 - reverse the focus and examine the base image for policy check violations and vulnerabilities which could be a deciding factor in choosing the base image for the application
 
-Additionally, other way to view policy enforcement, is to accept a risk, and allow either a CVE or Image to pass through policy checks.
+Additionally, another way to view policy enforcement, is to accept a risk, and allow either a CVE or Image to pass through policy checks.
 This is only suitable for some use cases, however it does allow you to continue shipping your code AND have that exception logged.
 
 Here are some guides on how both of these work
@@ -95,11 +103,16 @@ You can fetch and store all results to a local directory. Useful if you want to 
 ```bash
 anchorectl image add docker.io/library/nginx:latest --get all=./tmp/app
 ```
-
-To apply the active policy bundle and get a simple pass/fail check result:
+To apply the active policy bundle and SEE all the policy violations:
 ```bash
 anchorectl image check docker.io/centos:latest --detail
+```
+To apply the active policy bundle and get a simple pass/fail check result:
+```bash
 anchorectl image check -f -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
+```
+Output
+```
 Tag: docker.io/v2.0.0:latest
 Digest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
 Policy ID: 2c53a13c-1765-11e8-82ef-23527761d060
@@ -110,12 +123,15 @@ Reason: policy_evaluation
 error: 1 error occurred:
 * failed policies:
 ```
-sets the exit code to 1 if the policy evaluation result is "fail" (useful for breaking pipelines as a gating mechanism)
+> [!INFO]
+> This sets the exit code to 1 if the policy evaluation result is "fail" (useful for breaking pipelines as a gating mechanism)
 
-Here is what a pass with warn looks like (after I changed the policy)
+Here is what a pass with warn looks like (after I changed the policy that was active)
 ```bash
 anchorectl image check -f -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
- ✔ Evaluated against policy                  [passed]                                                                                                sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
+```
+Output
+```
 Tag: docker.io/v2.0.0:latest
 Digest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
 Policy ID: 18217317-d7db-4b8c-a771-a0125e28c341
@@ -124,30 +140,36 @@ Evaluation: pass
 Final Action: warn
 Reason: policy_evaluation
 ```
-It is recommended to use the specific sha256 when doing this check
-```bash
-anchorectl image check --detail -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
-```
+> [!TIP]
+> It is recommended to use the specific image digest rather than image tag when performing an 'anchorectl image check'
 
 Finally, Here is the outline of what needs to happen in essentially in all the CI/CD tools:
-
 ```bash
-# Foreach commit map your source code to an application version (used later to track sboms)
-anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
-# Do whatever normal image build steps you would do here
-# Now map the container artifact to the application release version (used for SBOM tracking)
-anchorectl application artifact add app@v2.0.0 image sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538
-# Now begin the analysis and evaluation of the image
+# Setup the anchorectl in the pipeline environment
 mkdir -p ${HOME}/.local/bin
 curl -sSfL  https://anchorectl-releases.anchore.io/anchorectl/install.sh  | sh -s -- -b $HOME/.local/bin  
 export PATH="${HOME}/.local/bin/:${PATH}"
+
+# Foreach commit map your source code to an application version (used later to track sboms)
+anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
+
+# Do whatever normal image build steps you would do here
+# ...
+
+# Next map the container artifact to the application release version (used for SBOM tracking)
+anchorectl application artifact add app@v2.0.0 image sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538
+
+# Now begin the analysis and evaluation of the image
 anchorectl image add --wait ${IMAGE_NAME}
 anchorectl image vulnerabilities ${IMAGE_NAME}
 anchorectl image check -f --detail ${IMAGE_NAME}
+# or
+anchorectl image check -f -t ${IMAGE_NAME}
 # Now if the image passed the policy check on the previous line, we can
 # Continue our pipeline (e.g. push to QA, promote image to another registry, etc).
 ```
 Most capabilities are exposed via the AnchoreCTL but all of them are exposed via the API that has a 100% coverage.
+If that is more suitable for you in your CI/CD tooling.
 
 ### Policy Enforcement and a custom policy
 
@@ -157,11 +179,11 @@ anchorectl policy add --input examples/lab-policy-example.json
 ```
 TODO - Finish adding policy example
 
-### Policy Enforcement with the Runtime Inventory
+### Policy Enforcement with the runtime inventory
 
 TODO - Finish adding example
 
-### Policy Enforcement with the Kubernetes Admission Controller
+### Policy Enforcement with the Kubernetes admission controller
 
 This controller is based on the openshift generic admission controller and implements a Kubernetes Dynamic Webhook controller for interacting with Anchore and making admission decisions based image properties as determined during analysis and subsequent Anchore Enterprise policy review.
 
@@ -173,7 +195,6 @@ The Anchore admission controller supports 3 different modes of operation allowin
 
 To learn more about deployment, configuration and usage please review the [integration repo](https://github.com/anchore/kubernetes-admission-controller) in GitHb.
 
-> [!TIP]
-> For a visual walkthrough checkout the [Policy enforcement workshop materials](https://viperr.anchore.com/policy/).
+## Next Lab
 
 Next: [Remediation](05-remediation.md)
