@@ -1,11 +1,25 @@
 FROM xmrig/xmrig:latest AS xmrig
 
+# first stage does the building
+# for UX purposes, I'm naming this stage `build-stage`
+
+FROM golang:1.20-alpine as build-stage
+WORKDIR /go/src/go-app
+COPY app.go .
+COPY go.mod go.sum ./
+RUN go mod tidy
+RUN go mod download
+RUN go build -o app .
+
+# starting second stage
 FROM docker.io/redhat/ubi9-minimal:latest
 
-LABEL maintainer="pvn@novarese.net"
-LABEL name="2023-12-demo"
-LABEL org.opencontainers.image.title="2023-12-demo"
-LABEL org.opencontainers.image.description="Simple image to test various policy rules with Anchore Enterprise."
+# copy the binary from the `build-stage`
+COPY --from=build-stage /go/src/go-app/app /bin
+
+CMD app
+
+# Now for some more bad stuff
 
 HEALTHCHECK --timeout=10s CMD /bin/true || exit 1
 
