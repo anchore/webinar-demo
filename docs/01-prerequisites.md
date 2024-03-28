@@ -41,7 +41,7 @@ Resources
 
 Login to DockerHub with access credentials for the Anchore Enterprise images.
 ```bash
-docker login --username 'username-in-docker-config.json' --password-stdin # password-in-docker-config.json
+docker login --username 'username-in-docker-config.json' # password-in-docker-config.json
 ```
 Pull the images from the Registry
 ```bash
