@@ -68,23 +68,24 @@ Point your browser at the Anchore Enterprise UI by directing it to http://localh
 
 #### Setup
 
-Ensure the setup script is executable, then run the setup script
+Ensure the setup script is executable, then run the setup script. Please note this will the current active cluster context.
 ```bash
-chmod +x ./deployment/setup.sh
-./deployment/setup.sh
+cd ./deployment
+chmod +x setup.sh
+setup.sh
 ```
 
 The Anchore UI can be accessed via localhost:8080 with kubernetes port-forwarding:
 ```bash
-kubectl port-forward svc/anchore-enterprise-ui -n anchore-demo 8080:80
+kubectl port-forward svc/anchore-demo-enterprise-ui -n anchore-demo 8080:80
 ```
 The Anchore API can be accessed via localhost:8228 with kubernetes port-forwarding:
 ```bash
-kubectl port-forward svc/anchore-enterprise-api -n anchore-demo 8228:8228
+kubectl port-forward svc/anchore-demo-enterprise-api -n anchore-demo 8228:8228
 ```
 Retrieve the admin password using the following command:
 ```bash
-kubectl get secret anchore-enterprise -n anchore-demo -o jsonpath='{.data.ANCHORE_ADMIN_PASSWORD}' | base64 -D
+kubectl get secret anchore-demo-enterprise -n anchore-demo -o jsonpath='{.data.ANCHORE_ADMIN_PASSWORD}' | base64 -D
 ```
 
 Setup UI port forwarding and point your browser at the Anchore Enterprise UI by directing it to http://localhost:8080/ and use credentials:
