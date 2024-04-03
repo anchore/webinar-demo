@@ -48,7 +48,19 @@ Let's walk through how Anchore can simplify this workflow
 - Get details on the non-os issues that I can fix as an application developer - anchorectl image vulnerabilities app:v2.0.0 -t non-os
 - Get details on the specific issues and where are they being found - anchorectl image content app:v3.0.0 -t go
 
-TODO: Add an inner loop example of remediating.
+TODO: Add an inner loop steps on remediation and update go.mod with newer packages removing vulns
+The team have decided to release this latest code with all the vulnerabilities removed (true at the time of writing)
+```bash
+anchorectl application version add app@v4.0.0
+cd ./examples/app:v4.0.0
+docker build . -t app:v4.0.0
+anchorectl image add app:v4.0.0 --from docker --dockerfile ./Dockerfile --force
+```
+Make note of the digest in the image add output, we will use this in the next two steps.
+```bash
+anchorectl application artifact add app@v4.0.0 image <retrieved-image-sha>
+```
+Check out the vulns on this image now via the anchorectl or via the web UI. Tip: Filter out the base image vulns as these are from the golden image managed by the platforms team.
 
 ### Remediation with Allowlists
 

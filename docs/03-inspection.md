@@ -223,7 +223,7 @@ Now we add the v3.0.0 image that uses base:v1.0.0 as it's base image
 anchorectl application version add app@3.0.0
 cd ./examples/app:v3.0.0
 docker build . -t app:v3.0.0
-anchorectl image add app:v3.0.0 --from docker 
+anchorectl image add app:v3.0.0 --from docker --dockerfile ./Dockerfile --force
 ```
 Make note of the digest in the image add output, we will use this in the next two steps.
 ```bash
