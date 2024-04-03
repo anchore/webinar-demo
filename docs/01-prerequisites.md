@@ -24,8 +24,8 @@ You can spin up an Anchore Enterprise Demo environment in three ways:
   - AWS Anchore Free Trial
 
 Resources
-  - A stand-alone deployment requires at least 8GB of RAM.
-  - Enough disk space available to support the largest container images or source repositories that you intend to analyze.
+  - A stand-alone deployment to run through the labs requires at least 8GB of RAM and 40GB of Storage. 
+  - For smoother experience we recommended 16 GB of RAM and 100 GB of storage to support storage for 100’s of images. 
 
 > [!NOTE]
 > It may take a few minutes for Anchore to spin up and for all services to be operational.
@@ -68,11 +68,11 @@ Point your browser at the Anchore Enterprise UI by directing it to http://localh
 
 #### Setup
 
-Ensure the setup script is executable, then run the setup script. Please note this will the current active cluster context.
+Ensure the setup script is executable, then run the setup script. Please note this will utilize the current active cluster context.
 ```bash
 cd ./deployment
 chmod +x setup.sh
-setup.sh
+./setup.sh
 ```
 
 The Anchore UI can be accessed via localhost:8080 with kubernetes port-forwarding:
@@ -110,6 +110,10 @@ Review [launching the trial](https://sites.google.com/anchore.com/anchore-enterp
 ## Install AnchoreCTL
 
 Next, we'll install the Anchore Enterprise ctl tool, quickly test using the `version` operation, and set up a few environment variables to allow it to interact with your quickstart deployment using the following process:
+
+> [!NOTE]
+> If you have chosen the AWS Anchore Free Trial route, the AnchoreCTL has already been installed and configured for you.
+> Please follow the [installation instructions](https://sites.google.com/anchore.com/anchore-enterprise-trial#h.g74u7lejv5m1) for usage.
 
 Download and install the AnchoreCTL
 ```bash

@@ -28,12 +28,36 @@ For this lab we turn to some Web UI work to generate some remediation actions.
 First navigate to an image, and load the policy compliance page. Below the donut chart you should see a list.  
 Click on the down arrow or on the right hand side click on tools and then show remediation suggestions.
 You then have some suggestions to chose from along with a notes field. Note: This can contain recommendations you have built into the policy itself. 
-We call these rule creator recommendations. You can also see these with the show details button the the recommendation column.
+We call these rule creator recommendations. You can also see these with the show details button the recommendation column.
 Add some notes and then press Add item to the Action Workbench.
 Now in the tab click on Action Workbench, from here you can push out these actions to an endpoint such as GitHub issues or a custom webhook
 
 > You can switch between policies by clicking on the right hand side dropdown view on the policy compliance page. 
 > However, please note when the non-active policy is selected, you are only previewing the artifact evaluation output produced by the selected policy.
+
+### Remediation as a Developer
+
+As a developer, this section will cover how you can quickly identify and find fixes in your application that can resolved.
+Remediation as an application developer can be tough. You can see lots of vulns that are OS focused or indeed related to the parent image manage by another team.
+Finally mapping a vulnerability to the extract part of my code/application can also be a challenge. 
+
+Let's walk through how Anchore can simplify this workflow
+
+- Base Image Inheritance - filter out vulns in our golden images / parent images which might be managed centrally.
+- Get details on the policy violation such as fix steps - anchorectl image check app:v3.0.0 --detail
+- Get details on the non-os issues that I can fix as an application developer - anchorectl image vulnerabilities app:v2.0.0 -t non-os
+- Get details on the specific issues and where are they being found - anchorectl image content app:v3.0.0 -t go
+
+TODO: Add an inner loop example of remediating.
+
+### Remediation with Allowlists
+
+You may decide to take a risk with a discovered vulnerability or say a non-compliant Dockerfile to corporate standards so that you can ship some important software.
+Anchore can help, by giving you the ability to give a hall pass (add to the allowlist) for a policy failure. You can time bound this too.
+
+There are many reasons why you might decide to do this from: needing to ship to we know this is not impacting.
+
+TODO: Add an example of an allowlist addition in action.
 
 ### Remediation for a limited time only...
 

@@ -46,16 +46,17 @@ This would be a typical task that gets carried out during CI.
 ```bash
 anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl source add github.com/anchore/webinar-demo@73522db08db1758c251ad714696d3120ac9b55f4 --from -
 ```
+Make note of the UUID in the output we will use this later.
 > [!TIP]
 > If you already have Syft installed you can use it $ syft -o json . | anchorectl source add ...
 
 Now we associate the source artifact to our application tag HEAD. As you continuously integrate you also can update Anchore with the latest code. 
 ```bash
-anchorectl application artifact add app@HEAD source 10bfb040-5a53-417c-8648-4b22fbfd7ba9
+anchorectl application artifact add app@HEAD source <retrieved-source-UUID>
 ```
 Now output the SBOM contents to screen in the table format. This could be useful for reporting or as output step in CI.
 ```bash
-anchorectl source sbom 10bfb040-5a53-417c-8648-4b22fbfd7ba9 -o table
+anchorectl source sbom <retrieved-source-UUID> -o table
 ```
 Check out the new application in the Web UI by visiting `/applications` and see the mapping over to our source control commit.
 Finally, please explore how you can export an SBOM.
@@ -110,14 +111,18 @@ This is because we need to tell Anchore to re analyse the image, and we can do t
 ```bash
 anchorectl image add app:v1.0.0 --from docker --dockerfile ./Dockerfile --force
 ```
-Now go check the UI under images.
+Make note of the digest in the output, we will use this in the next step. 
 
 Finally, let's associate this container image to v1.0.0 of the app in Anchore.
 ```bash
-anchorectl application artifact add app@v1.0.0 image sha256:5e08f037b46b8bbc670adb862857c6a581f1fba517143e8f855562ea16353140
+anchorectl application artifact add app@v1.0.0 image <retrieved-image-sha>
 ```
-With that we have seen how both Source and Image SBOMs can be mapped to entities we call applications. 
-This helps you maintain provenance and history about your releases and the source and containers associated with them.
+
+Now go and review both the `applications` and `images` sections in the web UI and inspect the app v1 image we added.
+
+We have seen how both Source and Image SBOMs can be mapped to entities we call applications. 
+This helps you maintain provenance and history about your releases and the source and containers associated with them. 
+In future labs, we will unpack more ways in which you gain visibility into your container to help you achieve tasks like remediation.
 
 ### SBOM Visibility of multi-architecture images
 
@@ -269,10 +274,15 @@ With `--from docker/registry` AnchoreCTL will perform a 'distributed/local' SBOM
 ```bash
 anchorectl image add app:v2.0.0 --from docker --dockerfile ./Dockerfile
 ```
-Now go check the Web UI. Let's associate this container image to our v2.0.0 of the application in Anchore
+Make note of the digest in the output, we will use this in the next step.
+
+Let's associate this container image to our v2.0.0 of the application in Anchore.
 ```bash
-anchorectl application artifact add app@v2.0.0 image sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
+anchorectl application artifact add app@v2.0.0 image <retrieved-image-sha>
 ```
+
+Now go and review both the `applications` and `images` sections in the web UI and inspect the app v2 image we added.
+
 Anchore Enterprise includes the ability to read a user-supplied ‘hints’ file to allow users to add software artifacts to Anchore’s analysis report. The hints file, if present, contains records that describe a software package’s characteristics explicitly, and are then added to the software bill of materials (SBOM).
 You may have noticed but v2.0.0 has a hints file called anchore_hints.json. Check it out and also look in the UI/SBOM for these artifacts.
 

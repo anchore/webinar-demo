@@ -109,37 +109,43 @@ anchorectl image check docker.io/centos:latest --detail
 ```
 To apply the active policy bundle and get a simple pass/fail check result:
 ```bash
-anchorectl image check -f -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
+anchorectl image check -f docker.io/app:v2.0.0
 ```
 Output
 ```
-Tag: docker.io/v2.0.0:latest
-Digest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
-Policy ID: 2c53a13c-1765-11e8-82ef-23527761d060
+Tag: docker.io/app:v2.0.0
+Digest: sha256:f691c18fc3a6ee3884f68d8d65930585b3456b5d64483829bebc6b619e182a5a
+Policy ID: 1f6ff4dc-da3c-4299-b2bf-56d2344f6f2d
 Last Evaluation: 2024-03-17T16:05:20Z
 Evaluation: fail
 Final Action: stop
 Reason: policy_evaluation
 error: 1 error occurred:
-* failed policies:
+	* failed policies:
 ```
 > [!IMPORTANT]
 > This sets the exit code to 1 if the policy evaluation result is "fail" (useful for breaking pipelines as a gating mechanism)
 
-Here is what a pass with warn looks like (after I changed the policy that was active)
+Below is what a pass with warn looks like (I used a loose policy to let the checks only flag a warn). 
+No need to replicate. If you want to replicate, create a new policy, add a ruleset that will trigger a warn.
+Then either make the policy active or supply the -p argument along with your chosen policy.
 ```bash
-anchorectl image check -f -t v2.0.0  sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
+anchorectl image check -f docker.io/app:v2.0.0 -p <my-policy-id>
 ```
 Output
 ```
-Tag: docker.io/v2.0.0:latest
-Digest: sha256:30c82fbf2de5a357a91f38bf68b80c2cd5a4b9ded849dbdf4b4e82e807511ffa
-Policy ID: 18217317-d7db-4b8c-a771-a0125e28c341
+Tag: docker.io/app:v2.0.0
+Digest: sha256:f691c18fc3a6ee3884f68d8d65930585b3456b5d64483829bebc6b619e182a5a
+Policy ID: 1f6ff4dc-da3c-4299-b2bf-56d2344f6f2d
 Last Evaluation: 2024-03-26T10:24:11Z
 Evaluation: pass
 Final Action: warn
 Reason: policy_evaluation
 ```
+Incidentally, its worth mentioning that currently you can only have one policy active in an Anchore account. 
+However, by using the -p flag you can point to use another policy. Useful for checking a new policy.
+Bear in mind that whilst the right policy checks are made on this call. The default is still set to another policy.
+
 > [!TIP]
 > It is recommended to use the specific image digest rather than image tag when performing an 'anchorectl image check'
 
@@ -157,7 +163,7 @@ anchorectl syft --source-name app --source-version HEAD -o json . | anchorectl s
 # ...
 
 # Next map the container artifact to the application release version (used for SBOM tracking)
-anchorectl application artifact add app@v2.0.0 image sha256:cb3218c8a053881bd00f4fa93e9f87e2c6204761e391b3aafc942f104362e538
+anchorectl application artifact add app@v2.0.0 image <retrieved-image-sha-from-build-step>
 
 # Now begin the analysis and evaluation of the image
 anchorectl image add --wait ${IMAGE_NAME}
@@ -180,6 +186,11 @@ anchorectl policy add --input examples/lab-policy-example.json
 TODO - Finish adding policy example
 
 ### Policy Enforcement with the runtime inventory
+
+To set up and get inventory details from your clusters please review - https://docs.anchore.com/current/docs/integration/kubernetes/runtime/#deployment
+
+> [!IMPORTANT]
+> Whilst we support ECS Clusters. We do not currently show any ECS results in the web ui. Instead, you must use `anchorectl inventory list`
 
 TODO - Finish adding example
 
