@@ -39,7 +39,4 @@ echo "Adding Anchore chart repository..."
 helm repo add anchore https://charts.anchore.io
 
 echo "Installing Anchore Enterprise to namespace ${namespace}"
-helm install -n ${namespace} anchore-demo anchore/enterprise -f values.yaml
-
-echo "Your admin login credentials for Anchore Enterprise"
-kubectl get secret anchore-demo-enterprise -n ${namespace} -o jsonpath='{.data.ANCHORE_ADMIN_PASSWORD}' | base64 -D
+helm install -n ${namespace} --version "2.4.2" anchore-demo anchore/enterprise -f values.yaml

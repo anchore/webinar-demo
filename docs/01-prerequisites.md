@@ -84,8 +84,13 @@ The Anchore API can be accessed via localhost:8228 with kubernetes port-forwardi
 kubectl port-forward svc/anchore-demo-enterprise-api -n anchore-demo 8228:8228
 ```
 Retrieve the admin password using the following command:
+MacOS
 ```bash
 kubectl get secret anchore-demo-enterprise -n anchore-demo -o jsonpath='{.data.ANCHORE_ADMIN_PASSWORD}' | base64 -D
+```
+Linux
+```bash
+kubectl get secret anchore-demo-enterprise -n anchore-demo -o jsonpath='{.data.ANCHORE_ADMIN_PASSWORD}' | base64 -d
 ```
 
 Setup UI port forwarding and point your browser at the Anchore Enterprise UI by directing it to http://localhost:8080/ and use credentials:
