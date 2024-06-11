@@ -1,17 +1,17 @@
 # All-in-one docker-compose deployment of a full anchore-enterprise service system
 ---
 version: "2.1"
-name: "anchore-demo"
+name: "anchore-demo-560"
 volumes:
   # Since this is for a quickstart, each minor version has its own db, to use a previous db and upgrade, change this to the db volume name you want to upgrade. e.g. "anchore-enterprise-4.2-db" if upgrading from a 4.2 quickstart deployment.
-  anchore-enterprise-5.3-db:
+  anchore-enterprise-5.6-db:
     # Set this to 'true' to use an external volume. In which case, it must be created manually with "docker volume create anchore-db-volume"
     external: false
 
 services:
   # The primary API endpoint service
   api:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     depends_on:
       - anchore-db
       - catalog
@@ -30,7 +30,6 @@ services:
       - ANCHORE_DB_PASSWORD=mysecretpassword
       - ANCHORE_ADMIN_PASSWORD=foobar
       - ANCHORE_AUTHZ_HANDLER=external
-      - ANCHORE_EXTERNAL_AUTHZ_ENDPOINT=http://rbac-authorizer:8228
       - ANCHORE_ENABLE_METRICS=false
       - ANCHORE_LOG_LEVEL=INFO
       - ANCHORE_OAUTH_ENABLED=true
@@ -39,7 +38,7 @@ services:
     command: ["anchore-enterprise-manager", "service", "start", "apiext"]
   # Catalog is the primary persistence and state manager of the system
   catalog:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     depends_on:
       - anchore-db
     volumes:
@@ -64,7 +63,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "catalog"]
   queue:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     depends_on:
       - anchore-db
       - catalog
@@ -89,7 +88,7 @@ services:
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "simplequeue"]
   policy-engine:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     depends_on:
       - anchore-db
       - catalog
@@ -135,7 +134,7 @@ services:
 
     command: ["anchore-enterprise-manager", "service", "start", "policy_engine"]
   analyzer:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     depends_on:
       - anchore-db
       - catalog
@@ -165,7 +164,7 @@ services:
   anchore-db:
     image: docker.io/library/postgres:13
     volumes:
-      - anchore-enterprise-5.3-db:/var/lib/postgresql/data
+      - anchore-enterprise-5.6-db:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=mysecretpassword
     expose:
@@ -176,61 +175,8 @@ services:
         max-size: 100m
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
-  rbac-authorizer:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
-    volumes:
-      - ./license.yaml:/license.yaml:ro
-      #- ./config-enterprise.yaml:/config/config.yaml:z
-    depends_on:
-      - anchore-db
-      - catalog
-    expose:
-      - 8089
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 100m
-    environment:
-      - ANCHORE_ENDPOINT_HOSTNAME=rbac-authorizer
-      - ANCHORE_DB_HOST=anchore-db
-      - ANCHORE_DB_PASSWORD=mysecretpassword
-      - ANCHORE_ADMIN_PASSWORD=foobar
-      - ANCHORE_ENABLE_METRICS=false
-      - ANCHORE_LOG_LEVEL=INFO
-      - ANCHORE_OAUTH_ENABLED=true
-      - ANCHORE_AUTH_ENABLE_HASHED_PASSWORDS=true
-      - ANCHORE_AUTH_SECRET=supersharedsecret
-    command:
-      ["anchore-enterprise-manager", "service", "start", "rbac_authorizer"]
-  rbac-manager:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
-    volumes:
-      - ./license.yaml:/license.yaml:ro
-      #- ./config-enterprise.yaml:/config/config.yaml:z
-    depends_on:
-      - anchore-db
-      - catalog
-    ports:
-      - "8229:8228"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: 100m
-    environment:
-      - ANCHORE_ENDPOINT_HOSTNAME=rbac-manager
-      - ANCHORE_DB_HOST=anchore-db
-      - ANCHORE_DB_PASSWORD=mysecretpassword
-      - ANCHORE_ADMIN_PASSWORD=foobar
-      - ANCHORE_AUTHZ_HANDLER=external
-      - ANCHORE_EXTERNAL_AUTHZ_ENDPOINT=http://rbac-authorizer:8228
-      - ANCHORE_ENABLE_METRICS=false
-      - ANCHORE_LOG_LEVEL=INFO
-      - ANCHORE_OAUTH_ENABLED=true
-      - ANCHORE_AUTH_ENABLE_HASHED_PASSWORDS=true
-      - ANCHORE_AUTH_SECRET=supersharedsecret
-    command: ["anchore-enterprise-manager", "service", "start", "rbac_manager"]
   reports:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -250,14 +196,13 @@ services:
       - ANCHORE_ADMIN_PASSWORD=foobar
       - ANCHORE_ENABLE_METRICS=false
       - ANCHORE_AUTHZ_HANDLER=external
-      - ANCHORE_EXTERNAL_AUTHZ_ENDPOINT=http://rbac-authorizer:8228
       - ANCHORE_LOG_LEVEL=INFO
       - ANCHORE_OAUTH_ENABLED=true
       - ANCHORE_AUTH_ENABLE_HASHED_PASSWORDS=true
       - ANCHORE_AUTH_SECRET=supersharedsecret
     command: ["anchore-enterprise-manager", "service", "start", "reports"]
   reports_worker:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -283,7 +228,7 @@ services:
     command:
       ["anchore-enterprise-manager", "service", "start", "reports_worker"]
   notifications:
-    image: docker.io/anchore/demo:enterprise-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-s3c-demo-5.6
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-enterprise.yaml:/config/config.yaml:z
@@ -303,7 +248,6 @@ services:
       - ANCHORE_ADMIN_PASSWORD=foobar
       - ANCHORE_ENABLE_METRICS=false
       - ANCHORE_AUTHZ_HANDLER=external
-      - ANCHORE_EXTERNAL_AUTHZ_ENDPOINT=http://rbac-authorizer:8228
       - ANCHORE_LOG_LEVEL=INFO
       - ANCHORE_ENTERPRISE_UI_URL=http://localhost:3000
       - ANCHORE_OAUTH_ENABLED=true
@@ -321,7 +265,7 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "redis-cli PING"]
   ui:
-    image: docker.io/anchore/demo:enterprise-ui-s3c-demo-5.3
+    image: docker.io/anchore/demo:enterprise-ui-s3c-demo-5.6
     volumes:
       - ./license.yaml:/license.yaml:ro
       #- ./config-ui.yaml:/config/config-ui.yaml:z

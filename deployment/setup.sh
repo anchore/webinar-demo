@@ -37,6 +37,7 @@ kubectl -n ${namespace} apply -f ./demo-secrets.yaml
 
 echo "Adding Anchore chart repository..."
 helm repo add anchore https://charts.anchore.io
+helm repo update
 
 echo "Installing Anchore Enterprise to namespace ${namespace}"
-helm install -n ${namespace} --version "2.4.2" anchore-demo anchore/enterprise -f values.yaml
+helm install -n ${namespace} --version "2.7.0" anchore-demo anchore/enterprise -f values.yaml

@@ -9,7 +9,33 @@
 
 service_dir: ${ANCHORE_SERVICE_DIR}
 tmp_dir: /analysis_scratch
-log_level: ${ANCHORE_LOG_LEVEL}
+log_level: ${ANCHORE_LOG_LEVEL}  # Deprecated - prefer use of logging:log_level
+
+logging:
+  colored_logging: false # Enable colored output in the logs
+  exception_backtrace_logging: false  # Enable stack traces in the logs
+  exception_diagnose_logging: false  # Enable detailed exception information in the logs
+  file_rotation_rule: "10 MB"  # Maximum size of a log file before it is rotated
+  file_retention_rule: 10  # Number of log files to retain before deleting the oldest
+  log_level: ${ANCHORE_LOG_LEVEL}  # Log level for the service code
+  server_access_logging: true  # Set whether to print server access to logging
+  server_response_debug_logging: false  # Log the elapsed time to process the request and the response size (debug log level)
+  server_log_level: "info"  # Log level specifically for the server (uvicorn)
+  structured_logging: false  # Enable structured logging output (JSON)
+
+server:
+  max_connection_backlog: 2048  # Max connections permitted in the backlog before dropping
+  max_wsgi_middleware_worker_queue_size: 100  # Max number of requests to queue for processing by ASGI2WSGI middleware
+  max_wsgi_middleware_worker_count: 50  # Max number of workers to have in the ASGI2WSGI middleware worker pool
+  ssl_cert: false  # SSL certificate file path
+  ssl_chain: false  # SSL CA certificates file path
+  ssl_enable: false  # Toggle SSL for the server
+  ssl_key: false  # SSL key file path
+  timeout_graceful_shutdown: false  # Seconds to permit for graceful shutdown or false to disable
+  timeout_keep_alive: ${ANCHORE_GLOBAL_SERVER_REQUEST_TIMEOUT_SEC}  # Seconds to keep a connection alive before closing
+
+# Backwards compatible key to be removed in 6.0
+server_request_timeout_seconds: ${ANCHORE_GLOBAL_SERVER_REQUEST_TIMEOUT_SEC}
 
 # When set, if a registry credential username is set to 'iamauto' for an ecr registry, the engine will
 # use whatever aws creds are available in the standard boto search path (.aws, env, etc)
@@ -19,10 +45,6 @@ internal_ssl_verify: ${ANCHORE_INTERNAL_SSL_VERIFY}
 
 global_client_connect_timeout: ${ANCHORE_GLOBAL_CLIENT_CONNECT_TIMEOUT}
 global_client_read_timeout: ${ANCHORE_GLOBAL_CLIENT_READ_TIMEOUT}
-
-# Twisted has a global server side timeout on all established connections which defaults to 60, anything lasting longer
-# than this (+ a 15 min abort final timeout) will have the connection killed by twisted
-server_request_timeout_seconds: ${ANCHORE_GLOBAL_SERVER_REQUEST_TIMEOUT_SEC}
 
 auto_restart_services: false
 
@@ -36,6 +58,37 @@ max_source_import_size_mb: ${ANCHORE_MAX_IMPORT_SOURCE_SIZE_MB}
 
 # Defines the maximum sbom size (in MB) allowed to be imported
 max_import_content_size_mb: ${ANCHORE_MAX_IMPORT_CONTENT_SIZE_MB}
+
+audit:
+  mode: log
+  enabled: true
+  verbs:
+    - post
+    - put
+    - delete
+    - patch
+  resource_uris:
+    #- "*",  # Uncomment to log all resource URIs
+    - "/accounts"
+    - "/accounts/{account_name}"
+    - "/accounts/{account_name}/state"
+    - "/accounts/{account_name}/users"
+    - "/accounts/{account_name}/users/{username}"
+    - "/accounts/{account_name}/users/{username}/api-keys"
+    - "/accounts/{account_name}/users/{username}/api-keys/{key_name}"
+    - "/accounts/{account_name}/users/{username}/credentials"
+    - "/rbac-manager/roles"
+    - "/rbac-manager/roles/{role_name}/members"
+    - "/rbac-manager/saml/idps"
+    - "/rbac-manager/saml/idps/{name}"
+    - "/rbac-manager/saml/idps/{name}/user-group-mappings"
+    - "/system/user-groups"
+    - "/system/user-groups/{group_uuid}"
+    - "/system/user-groups/{group_uuid}/roles"
+    - "/system/user-groups/{group_uuid}/users"
+    - "/user/api-keys"
+    - "/user/api-keys/{key_name}"
+    - "/user/credentials"
 
 # Locations for keys used for signing and encryption. Only one of 'secret' or 'public_key_path'/'private_key_path' needs to be set. If all are set then the keys take precedence over the secret value
 # Secret is for a shared secret and if set, all components in anchore should have the exact same value in their configs.
@@ -126,9 +179,6 @@ services:
     endpoint_hostname: '${ANCHORE_ENDPOINT_HOSTNAME}'
     listen: '0.0.0.0'
     port: ${ANCHORE_SERVICE_PORT}
-    authorization_handler: external
-    authorization_handler_config:
-      endpoint: ${ANCHORE_EXTERNAL_AUTHZ_ENDPOINT}
   catalog:
     enabled: true
     require_auth: true
@@ -215,7 +265,7 @@ services:
     port: ${ANCHORE_SERVICE_PORT}
     external_port: ${ANCHORE_EXTERNAL_PORT}
     external_tls: ${ANCHORE_EXTERNAL_TLS}
-    layer_cache_enabled: ${ANCHORE_LAYER_CACHE_ENABLED}
+    layer_cache_enable: ${ANCHORE_LAYER_CACHE_ENABLED}
     layer_cache_max_gigabytes: ${ANCHORE_LAYER_CACHE_SIZE_GB}
     enable_hints: ${ANCHORE_HINTS_ENABLED}
     keep_image_analysis_tmpfiles: false
@@ -286,24 +336,6 @@ services:
                 # Disabling search by CPE for the stock matcher will entirely disable binary-only matches
                 # and is not advised
                 enabled: ${ANCHORE_VULN_MATCHING_ECOSYSTEM_SPECIFIC_STOCK_SEARCH_BY_CPE_ENABLED}
-
-  # This should never be exposed outside of linked containers/localhost. It is used only for internal service access
-  rbac_authorizer:
-    enabled: true
-    require_auth: true
-    endpoint_hostname: "${ANCHORE_ENDPOINT_HOSTNAME}"
-    # Normally this would be 127.0.0.1, but for docker compose have to bind to other for routing
-    listen: '0.0.0.0'
-    port: 8228
-  rbac_manager:
-    enabled: true
-    require_auth: true
-    endpoint_hostname: "${ANCHORE_ENDPOINT_HOSTNAME}"
-    listen: '0.0.0.0'
-    port: 8228
-    authorization_handler: external
-    authorization_handler_config:
-      endpoint: "${ANCHORE_EXTERNAL_AUTHZ_ENDPOINT}"
   feeds:
     enabled: true
     require_auth: false
@@ -327,18 +359,42 @@ services:
     drivers:
       # Configuration section for drivers gathering and normalizing feed data.
       amzn:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_AMAZON_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_AMAZON_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_AMAZON_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_AMAZON_PROVIDER_IMPORT_RESULTS_PATH}"
       alpine:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_ALPINE_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_ALPINE_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_ALPINE_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_ALPINE_PROVIDER_IMPORT_RESULTS_PATH}"
       debian:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_DEBIAN_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_DEBIAN_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_DEBIAN_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_DEBIAN_PROVIDER_IMPORT_RESULTS_PATH}"
       ol:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_ORACLE_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_ORACLE_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_ORACLE_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_ORACLE_PROVIDER_IMPORT_RESULTS_PATH}"
       ubuntu:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_UBUNTU_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_UBUNTU_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_UBUNTU_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_UBUNTU_PROVIDER_IMPORT_RESULTS_PATH}"
       rhel:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_RHEL_PROVIDER_ENABLED}"
         concurrency: 5
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_RHEL_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_RHEL_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_RHEL_PROVIDER_IMPORT_RESULTS_PATH}"
       npm:
         # npm driver is disabled out of the box
         enabled: "${ANCHORE_ENTERPRISE_PACKAGE_DRIVERS_ENABLED}"
@@ -348,19 +404,37 @@ services:
         # rubygems package data is a PostgreSQL dump. db_connect string defines the database endpoint to be used for loading the data
         db_connect: 'postgresql://${ANCHORE_DB_USER}:${ANCHORE_DB_PASSWORD}@${ANCHORE_DB_HOST}:${ANCHORE_DB_PORT}/${ANCHORE_RUBYGEMS_DB_NAME}'
       nvdv2:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_ENABLED}"
         # An API key is optional but is recommended to reduce rate limiting. Request one from https://nvd.nist.gov/developers/request-an-api-key
+        # This is not necessary if `import_results.enabled` is true since the provider will never be directly relying on the NVD api.
         api_key: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_API_KEY}"
+        # The overrides settings will only apply when import_results is not enabled
+        overrides:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_OVERRIDES_ENABLED}"
+          url: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_OVERRIDES_URL}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_NVD_PROVIDER_IMPORT_RESULTS_PATH}"
       mariner:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_MARINER_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_MARINER_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_MARINER_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_MARINER_PROVIDER_IMPORT_RESULTS_PATH}"
       msrc:
         enabled: "${ANCHORE_ENTERPRISE_FEEDS_MSRC_DRIVER_ENABLED}"
         # Uncomment to add MSRC product IDs for generating their feed data, this extends the pre-defined list of product IDs
         # whitelist:
         # - 12345
       github:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_GITHUB_PROVIDER_ENABLED}"
+        # api token is only necessary when import_results is disabled
         token: "${ANCHORE_ENTERPRISE_FEEDS_GITHUB_DRIVER_TOKEN}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_GITHUB_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_GITHUB_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_GITHUB_PROVIDER_IMPORT_RESULTS_PATH}"
       grypedb:
         enabled: true
         preload:
@@ -369,13 +443,25 @@ services:
         persist_provider_workspaces: true
         restore_provider_workspaces: true
       sles:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_SLES_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_SLES_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_SLES_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_SLES_PROVIDER_IMPORT_RESULTS_PATH}"
       anchore_match_exclusions:
         enabled: "${ANCHORE_ENTERPRISE_FEEDS_VULN_MATCH_EXCLUSION_DRIVER_ENABLED}"
       wolfi:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_WOLFI_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_WOLFI_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_WOLFI_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_WOLFI_PROVIDER_IMPORT_RESULTS_PATH}"
       chainguard:
-        enabled: true
+        enabled: "${ANCHORE_ENTERPRISE_FEEDS_CHAINGUARD_PROVIDER_ENABLED}"
+        import_results:
+          enabled: "${ANCHORE_ENTERPRISE_FEEDS_CHAINGUARD_PROVIDER_IMPORT_RESULTS_ENABLED}"
+          host: "${ANCHORE_ENTERPRISE_FEEDS_CHAINGUARD_PROVIDER_IMPORT_RESULTS_HOST}"
+          path: "${ANCHORE_ENTERPRISE_FEEDS_CHAINGUARD_PROVIDER_IMPORT_RESULTS_PATH}"
   reports:
     enabled: true
     require_auth: true
@@ -385,9 +471,6 @@ services:
     # GraphiQL is a GUI for editing and testing GraphQL queries and mutations.
     # Set enable_graphiql to true and open http://<host>:<port>/v2/reports/graphql in a browser for reports API
     enable_graphiql: "${ANCHORE_ENTERPRISE_REPORTS_ENABLE_GRAPHQIQL}"
-    authorization_handler: external
-    authorization_handler_config:
-      endpoint: "${ANCHORE_EXTERNAL_AUTHZ_ENDPOINT}"
     cycle_timers:
       reports_scheduled_queries: 600 # 10 Minutes - Check for scheduled queries that need to be run
     # Configure max_async_execution_threads to adjust how many scheduled reports to generate in parallel
@@ -438,10 +521,7 @@ services:
     endpoint_hostname: "${ANCHORE_ENDPOINT_HOSTNAME}"
     listen: '0.0.0.0'
     port: 8228
-    authorization_handler: external
-    authorization_handler_config:
-      endpoint: "${ANCHORE_EXTERNAL_AUTHZ_ENDPOINT}"
     cycle_timers:
       notifications: 30
-    # Set Anchore Enterprise UI base:v1.0.0 URL to receive UI links in notifications
+    # Set Anchore Enterprise UI base URL to receive UI links in notifications
     ui_url: "${ANCHORE_ENTERPRISE_UI_URL}"

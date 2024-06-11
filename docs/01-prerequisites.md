@@ -45,10 +45,10 @@ docker login --username 'username-in-docker-config.json' # password-in-docker-co
 ```
 Pull the images from the Registry
 ```bash
-docker pull docker.io/anchore/demo:enterprise-s3c-demo-5.3
+docker pull docker.io/anchore/demo:enterprise-s3c-demo-5.6
 ```
 ```bash
-docker pull docker.io/anchore/demo:enterprise-ui-s3c-demo-5.3
+docker pull docker.io/anchore/demo:enterprise-ui-s3c-demo-5.6
 ```
 Run docker compose and spin up Anchore Enterprise
 ```bash
@@ -122,7 +122,7 @@ Next, we'll install the Anchore Enterprise ctl tool, quickly test using the `ver
 
 Download and install the AnchoreCTL
 ```bash
-curl -sSfL  https://anchorectl-releases.anchore.io/anchorectl/install.sh  | sh -s -- -b /usr/local/bin v5.3.0
+curl -sSfL  https://anchorectl-releases.anchore.io/anchorectl/install.sh  | sh -s -- -b /usr/local/bin v5.6.2
 ```
 > [!TIP]
 > For more specific help, please consult our [installation docs](https://docs.anchore.com/current/docs/deployment/anchorectl/).
@@ -148,13 +148,13 @@ Quickly test using the `version` operation that anchorectl has been set up corre
 > output
 ```
 Application:        anchorectl
-Version:            5.3.0
-SyftVersion:        v0.97.1
-BuildDate:          2023-11-21T22:09:54Z
-GitCommit:          f7604438b45f7161c11145999897d4ae3efcb0c8
-GitDescription:     v5.3.0
-Platform:           linux/amd64
-GoVersion:          go1.21.1
+Version:            5.6.2
+SyftVersion:        v1.5.0
+BuildDate:          2024-05-30T02:22:55Z
+GitCommit:          1c7b0cdc25834656cefc4adc3794500a0b6bb807
+GitDescription:     v5.6.2
+Platform:           darwin/arm64
+GoVersion:          go1.21.10
 Compiler:           gc
 ```
 
