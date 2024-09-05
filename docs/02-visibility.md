@@ -88,26 +88,68 @@ This release contained a Dockerfile, so let's move on to build an image.
 
 ### SBOM Visibility of images
 
-Now that the v1.0.0 app has parsed ALL the unit & integration tests we are ready to bundle this software into an image as part of the CD process.
+The v1.0.0 app like many in the cloud native world, is now ready to be turned into an image. When we do this we might also use bring in additional software and place it into an OS base image such as ubuntu minimal.
+With extra software our SBOM will grow and as such we will want to get insight into this artifact. This section will cover how we can add such an image 
 
 Build the v1.0.0 app image locally and tag it as v1.0.0
 ```bash
 docker build . -t app:v1.0.0
 ```
-Submit the new image to Anchore Enterprise (anchorectl will perform full local image analysis locally)
+Submit the new image to Anchore Enterprise (anchorectl will perform full local image analysis locally in Distributed mode)
 ```bash
 anchorectl image add app:v1.0.0 --from docker 
 ```
-> Local image analysis can be useful if for example, you cannot reach the Anchore API / Deployment from your CI/CD environment
-> For this you can locally perform analysis and store the resulting output like SBOM files into the release notes, code repo or container image currently being built.
-> There are some limitations for example Malware scanning can only take place on the server with centralised analysis.
 
-Let's resubmit our local app image, but this time add the Dockerfile as extra data
+Anchore can use scan/analyse a local image (Distributed mode) or tell Anchore Enterprise to pull the image from a registry in order to scan/analyse (Centralized mode)
+
+Distributed image analysis can be useful if for example you have the image built locally already in your CI/CD environment. 
+This can save time on analysis as in Centralized mode the Anchore Enterprise Server would need to download the image and then scan.
+There is one limitation with Distributed mode, Malware scanning is not possible, as this can only take place on the server in Centralized mode.
+
+Let's look at some examples
+
+Distributed Mode
+
+Using a local image and using the known local image tag.
+```bash
+anchorectl image add app:v1.0.0 --from docker 
+```
+
+Using a local image and using the known registry image tag.
+```bash
+anchorectl image add app:v1.0.0 --from registry 
+```
+
+Using a local image tar.
+```bash
+docker save app:v1.0.0  -o app-v1.0.0.tar
+anchorectl image add app:v1.0.0 --from docker-archive:./app-v1.0.0.tar
+```
+
+Centralized Mode
+
+Using the registry and repo reference to pull and scan/analyse the image.
+```bash
+anchorectl image add docker.io/danperry/app:v2.0.0
+```
+
+Give your image a custom registry and repo name.
+```bash
+anchorectl image add image.fakehost.com:newapp:v1.0.0 --from docker:app:v1.0.0
+anchorectl image add tar.fakehost.com:newapp:v1.0.0 --from docker-archive:./app-v1.0.0.tar
+```
+
+Let's resubmit our local app image, but this time add the Dockerfile as extra data.
 ```bash
 anchorectl image add app:v1.0.0 --from docker --dockerfile ./Dockerfile
 ```
 When reviewing the UI for this image you may notice "No results" for the Dockerfile tab under images in the Web UI.
-This is because we need to tell Anchore to re analyse the image, and we can do this with --force
+
+Anchore is clever when you scan the same image as it notices no differences and therefore will not perform certain scan steps as a result. 
+However, in this case we want to tell Anchore to re analyse the image so that we can pick up and use the newly supplied Dockerfile data.
+We can do this by using --force
+> [!NOTE]
+> --force can be handy in many other use-cases too, lets say you have just enabled malware and now want to rescan and see the results
 ```bash
 anchorectl image add app:v1.0.0 --from docker --dockerfile ./Dockerfile --force
 ```
@@ -120,9 +162,10 @@ anchorectl application artifact add app@v1.0.0 image <retrieved-image-sha>
 
 Now go and review both the `applications` and `images` sections in the web UI and inspect the app v1 image we added.
 
-We have seen how both Source and Image SBOMs can be mapped to entities we call applications. 
-This helps you maintain provenance and history about your releases and the source and containers associated with them. 
-In future labs, we will unpack more ways in which you gain visibility into your container to help you achieve tasks like remediation.
+Why supply the Dockerfile?
+Simply - It will provide extra data about the image. Anchore does inspect and infer some of the image history using the layers, however this is limited and no substitute for a full Dockerfile.
+Firstly, this allows you to inspect and see the full Dockerfiles contents in the Anchore Enterprise Web UI. Secondly, you can define additional policy rules using Dockerfile policy gates based on your image's Dockerfile. 
+For example, raise a policy violation if my image is exposing port 22 with EXPOSE 22 or the container is running the application with USER root. More details in the policy section.
 
 ### SBOM Visibility of multi-architecture images
 
@@ -143,7 +186,7 @@ Let's now re-add the CentOS image, but this time be specific and add only the AR
 anchorectl image add docker.io/centos:latest --from registry --platform  arm64 --force
 ```
 > [!NOTE]
-> Remember `--force` tells Anchore Enterprise to reanalyse from the image. And not just reload the latest vulnerabilities.
+> Remember `--force` tells Anchore Enterprise to re analyse or scan the image. And not just reload the latest vulnerabilities.
 
 Check the Web UI once again to see the arm64 architecture in the Image SHA and also check out the Changelog tab.
 You can see the new Architecture but also how this changed over time. This is what we call SBOM drift. 
@@ -234,7 +277,7 @@ Output
 ```
 Try for yourself with the centos repo in the docker.io registry.
 
-Set up a subscription to new tag updates for the centos repo from the docker registry. 
+Set up a subscription to new tag updates for the centos repo from the container registry. 
 Then submit a bunch of images and checkout the "Event's & Notifications Web" UI.
 
 ```bash
@@ -252,7 +295,7 @@ Watches and Subscriptions offer many possibilities and combined with notificatio
 
 Now that v2.0.0 of the app has passed ALL the tests we are ready to build the container as part of the CD process and deliver the artifact to our production environment.
 However, we know that some bespoke packages are not getting discovered, and we want to manually flag or 'hint' that these exist. 
-We can achieve this by adding a hints json file that contains the metadata anchore can detect and process.
+We can achieve this by adding a hints json file that contains the metadata Anchore can detect and process.
 
 Let's first "check and submit" the source code as v2.0.0. Then we move onto building an image, and look at the hints process.
 ```bash
@@ -270,7 +313,7 @@ Add version v2.0.0 for our application
 anchorectl application version add app@v2.0.0
 ```
 Submit our new v2.0.0 image for addition to Anchore Enterprise 
-With `--from docker/registry` AnchoreCTL will perform a 'distributed/local' SBOM-generation and analysis (secret scans, filesystem metadata, and content searches) and upload the result to Anchore Enterprise without ever having that image touched or loaded by your Enterprise deployment.
+With `--from docker/registry` AnchoreCTL will perform a 'distributed/local' SBOM-generation and analysis (secret scans, filesystem metadata, and content searches) and upload the results to Anchore Enterprise without ever having that image touched or loaded by your Enterprise deployment.
 ```bash
 anchorectl image add app:v2.0.0 --from docker --dockerfile ./Dockerfile
 ```
@@ -288,10 +331,12 @@ You may have noticed but v2.0.0 has a hints file called anchore_hints.json. Chec
 
 ### SBOM Visibility across an application
 
-We have so far explored how we can add source and container images and map those to an application and a release.
-Now we will explore how we can use this 'indexing or cataloging' to solve a problem. 
+So far, we have explored how we can add source and container images and map those to an application and a tag or release.
+As the tech stack / application develops over time we might add new pieces of software like nginx or redis. 
+Additionally, we will very likely add newer versions of our own code application such as commits or continuous integrations of code and eventually release candidates of built container images from a CD pipeline.
+To see how this changes over time, with Anchore you can 'index or catalog' each build or release of the software and containers. Let's run through a quick example:
 
-Now for our app:v2.0.0 application we have a dependency on two other containers nginx and postgres. Let's add these supporting containers
+For our app:v2.0.0 application we have a dependency on two other containers nginx and postgres. Let's add these supporting containers to our application construct
 ```bash
 anchorectl image add docker.io/library/postgres:13
 anchorectl application artifact add app@v2.0.0 image sha256:8a8289d4999b47a5a9a585c775d33deadc43fa0a2a6b647c58cdaf1e59703977
@@ -320,9 +365,13 @@ Finally, you can request an SBOM for the entire application suite for version 2.
 ```bash
 anchorectl application sbom app@v2.0.0 > all_the_sboms_appv2.0.0.json
 ```
-This is helpful, when for example, your customer asks for an app wide SBOM. You don't need to do individual requests. You can perform one bulk action. 
+This is helpful, when for example, a customer asks for a tech stack wide SBOM. You don't need to make individual requests for SBOMs and instead you can perform one bulk query. 
 Equally, if you need a single SBOM for just one container you can request this too and with application management you can ensure you request the correct one.
 
 ## Next Lab
+
+We have seen how both Source and Image SBOMs can be generated and imported into Anchore. 
+We also showed how these can be mapped to a construct we call application which helps you maintain provenance and history about your releases and the source and containers associated with them.
+In future labs, we will unpack more ways in which you gain visibility into your container to help you achieve important tasks like remediation.
 
 Next: [Inspection](03-inspection.md)

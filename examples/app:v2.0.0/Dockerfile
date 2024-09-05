@@ -3,7 +3,7 @@ FROM xmrig/xmrig:latest AS xmrig
 # first stage does the building
 # for UX purposes, I'm naming this stage `build-stage`
 
-FROM golang:1.20-alpine as build-stage
+FROM golang:1.20-alpine AS build-stage
 WORKDIR /go/src/go-app
 COPY app.go .
 COPY go.mod go.sum ./
