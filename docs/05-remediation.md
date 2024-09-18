@@ -64,10 +64,8 @@ Check out the vulns on this image now via the anchorectl or via the web UI. Tip:
 
 ### Remediation with Allowlists
 
-You may decide to take a risk with a discovered vulnerability or say a non-compliant Dockerfile to corporate standards so that you can ship some important software.
-Anchore can help, by giving you the ability to give a hall pass (add to the allowlist) for a policy failure. You can time bound this too.
-
-There are many reasons why you might decide to do this from: needing to ship to we know this is not impacting.
+You may decide upon analysis that you can accept a risk with a discovered vulnerability or a non-compliant Dockerfile so that you can ship some important software.
+Anchore helps, by providing you the ability to give a hall pass (add to the allowlist) for a policy item failure and you can time bound this allowlist item too.
 
 TODO: Add an example of an allowlist addition in action.
 

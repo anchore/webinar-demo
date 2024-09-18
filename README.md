@@ -2,7 +2,7 @@
 
 This tutorial steps you through deploying Anchore Enterprise (version 5.6.2) and a series of labs showcasing how you can use Anchore Enterprise to improve security across your software supply chain.
 
-> _The deployment from this tutorial should not be viewed as production ready, and will receive limited support from Anchore, but don't let that stop you from learning!_
+> _The deployment in this tutorial is not production ready, and will receive limited support from Anchore, but don't let that stop you from learning!_
 
 ## Target Audience
 
