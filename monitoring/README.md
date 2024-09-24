@@ -309,18 +309,6 @@ You can see the same for the Memory: Process RSS graph bottom right with the lin
 
 
 
-
-A customer is seeing a particular service crash
-
-- Reduce requests/limits on a service(analyzer or policy?) 
-
-- Run a large image for analysis so the service crashes
-
-- View the CPU/mem metrics for this to show how you can tune the deployment
-
-
-
-
 Continued Learning;\
 [Prometheus Primer](https://docs.google.com/document/d/1Fai0cuk7IojYs6VzAhZ2kUfo0NRDkFJf-9V8LxaqF5U/edit) - Some more detailed information on understanding metrics and how to combine them.
 
