@@ -57,10 +57,9 @@ A customer is complaining about slow scanning times in Anchore. This can be trac
 
     docker logs anchore-570-analyzer-1
 
-Now, there a few ways to find the events for the analysis of this image, and the method you choose may depend on how busy the analyzer has been. You can manually scroll through the logs until you find the events for analysis of the image. This may be the difficult way to do things if you have a lot of logs and activity in the analyzer.\
-The preferred method, would be searching for the image tag which can be done using a grep in the docker command.
+Now, there are a few ways to find the events for the analysis of this image, and the method you choose may depend on how busy the analyzer has been. You can manually scroll through the logs until you find the events for analysis of the image. This may be a difficult way to do things if you have a lot of logs and activity in the analyzer.\
+The preferred method would be searching for the image tag which can be done using a grep in the docker command.
 
-\
 
 
     $ docker logs anchore-570-analyzer-1 | grep docker.io/library/postgres -m 1
@@ -81,14 +80,12 @@ I’ve limited it to one line as all we need from this is the thread number, as 
     [service:anchore-enterprise-analyzer] [2024-08-18T12:59:13.585940+00:00] [MainProcess] [Thread-55181] [INFO] [anchore_enterprise.services.analyzer.localanchore_standalone/pull_image():679] | Downloading image docker.io/library/postgres@sha256:07ad6d6385313c68c8acd575ac8cc0d73921cdea430afd3dc228782ee1f5a73b for analysis to /analysis_scratch/17b02621-8234-4815-93cc-1ae10fe6a75f/raw
     [2024-08-18T13:00:32.494336+00:00] [MainProcess] [Thread-55181] [INFO] [anchore_enterprise.services.analyzer.analysis/process_analyzer_job():508] | analysis complete: admin : sha256:07ad6d6385313c68c8acd575ac8cc0d73921cdea430afd3dc228782ee1f5a73b
 
-I have gone ahead and removed a large portion of the lines in the output to reduce the size for this document, however, in your output, you should see the full process that the analyzer goes through when analysing the image from the moment the image is pulled from the queue to the moment the image data is uploaded and the analysis is complete. Each event has the thread number in the log line, which means that by knowing which thread the analysis starts processing on, we can grep for it and track the entire process. Knowing this, we can use the datetime-stamps in the log li  dnes to work out how long an image takes to analyse, the time of the image getting de-qued was 12:59:13 and the time that the analysis completed was 13:00:32. This means that the image just over 1 minute and 19 seconds to complete. This can be valuable to know, however, can be somewhat of an awkward process to complete to find the analysis time for an image as well as being difficult to visualise.
+I have gone ahead and removed a large portion of the lines in the output to reduce the size for this document, however, in your output, you should see the full process that the analyzer goes through when analyzing the image from the moment the image is pulled from the queue to the moment the image data is uploaded and the analysis is complete. Each event has the thread number in the log line, which means that by knowing which thread the analysis starts processing on, we can grep for it and track the entire process. Knowing this, we can use the datetime-stamps in the log lines to work out how long an image takes to analyze, the time of the image getting de-qued was 12:59:13 and the time that the analysis completed was 13:00:32. This means that the image just over 1 minute and 19 seconds to complete. This can be valuable to know, however, can be somewhat of an awkward process to complete to find the analysis time for an image as well as being difficult to visualize.
 
 But in Prometheus, we can view a specific set of metrics for Analysis time such as; **_anchore\_analysis\_time\_seconds\_sum / anchore\_analysis\_time\_seconds\_count_**
 
-\
-\
-\
-\
+
+
 
 
 
@@ -103,10 +100,11 @@ Things like this will allow them to optimize their cost-performance ratio.
 
 Built-in Compose Monitoring
 
-These give a very high level overview of the given metrics, but these are for the overall deployment only, meaning none of these graphs will be accurate down to the actual service level i.e How much max memory and/or CPU is analyzer 1 of x using?
+These give a very high-level overview of the given metrics, but these are for the overall deployment only, meaning none of these graphs will be accurate down to the actual service level i.e How much max memory and/or CPU is analyzer 1 of x using?
 
 
-Monitoring Using the Event Logs in CLI\
+## Monitoring Using the Event Logs in CLI
+
 The Event Log allows the user to monitor async events across the full spectrum of Anchore services. This is extremely useful for troubleshooting as you can trace an Event Activity throughout the Docker desktop deployment and discover any errors that might be run into along the way. The error codes/messages are usually a little more descriptive in the logs which often leads to a better idea of the root issue. You can also pinpoint exact errors and view errors by the specific error type. Now, being in the support team, we usually analyse logs through text files generated by the support-bundle. However, for a deployment that you have access to via anchorectl, we have extremely useful tools to make navigating the event logs much smoother.
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -118,7 +116,7 @@ Prometheus stores data and collects/stores time-series data from different sourc
 
 Prometheus Metric Types
 
-Prometheus metric names can be anything, but with the Anchore services, we try to keep them as close to describing what the metric itself actually is as much as possible. For example, ‘anchore\_analyzer\_status’ will be the analyzer's status.
+Prometheus metric names can be anything, but with the Anchore services, we try to keep them as close to describing what the metric itself is, as much as possible. For example, ‘anchore\_analyzer\_status’ will be the analyzer's status.
 
 - Counter: simple type that starts at 0 and can only ever increase.
 
@@ -130,7 +128,6 @@ Prometheus metric names can be anything, but with the Anchore services, we try t
 
 - Histogram: less-simple type that is used by PromQL/Grafana to display statistical properties of a metric, like percentiles, rates, distributions and deviations, and other useful functions. Each histogram metric automatically comes with two related metrics, both counters, for the \_sum and \_count, which are useful/easy to use on their own.
 
-\
 
 
 
@@ -142,7 +139,6 @@ Now, ensure that your Docker deployment is up and running as expected. Once you 
 
 <https://docs.anchore.com/current/docs/deployment/anchore-prometheus.yml>
 
-\
 
 
 1. Uncomment(or add and then uncomment) the following section at the bottom of the docker-compose.yaml file:
@@ -202,7 +198,8 @@ Lab Exercise
 
 3. Hit ‘Execute’ and take a look at the graph.
 
-4. \*\*Offsite Only - Not for Public Repo\*\*Describe what the graph is showing.. \[Answer: The ‘waiting’ line will go from flat at 1(number of analyzers) to 0 as the deployment starts to scan the images that you added and the analyzer’s state changes from waiting to processing, meaning there are no more analyzers in a waiting state. You will also notice the crossover of lines as the same thing happens in reverse for the ‘processing’ line. While the analyzer is in its waiting state there are no analyzers in processing so the line starts off flat at 0, but as the analyzer starts to analyse the images we add, the state changes from waiting to processing and we see these lines crossover and the processing line jumps to 1 for the duration of the time that the analyzer is active. In my example, I added 3 images at around the same time at 15:25 and they were processing keeping the analyzer busy until 15:29, so 4-5mins in total.]
+4. Summit Question 1: Describe what the graph is showing.. \
+
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXeejiVpCOHfC1Gom-DmfeyNlJTOVgjusyVqksRf_3mfIUYRWw5jia5FYaGEciWmnni3mspXpBFrBBoi4RKa-EARLtRCbIhvAZMQVRfhz5XmelS-k7Ir5RmarX8pzahwKEDRcLAIUDbnn1bKp1nFylxKwYZH?key=yhcfB7su20ibDNRSMmeo7A)
 
@@ -212,23 +209,23 @@ Lab Exercise
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdleqhtTVZ5y-VZhAWpk1cPY3Bx4xZDVylHnKKaeNAWh8BG54_jA7551aLsrf8Z3Z1vOf24t_MjunuNvP486Z5Vh4ne-njdAbOR5iD4BFSQMO5Y5fdElmXt5Saoq0iy3U7IUSsNeCzVHRz2Z5Rtur2uF8RV?key=yhcfB7su20ibDNRSMmeo7A)
 
-5. \*\*Offsite Only - Not for Public Repo\*\*Can you describe/draw what this would look like if the deployment had 2 analyzers and 1 image was added for analysis, taking 3mins to process.
+5. Summit Question 2: Can you describe/draw what this would look like if the deployment had 2 analyzers and 1 image was added for analysis, taking 3mins to process.
 
-\
-\
+
+
 
 
 
 ## What is Grafana?
 
-You may be aware of Grafana, or have least heard of it. It is a separate tool to Prometheus, but they work seamlessly together to create visualizations and dashboards of metrics stored in Prometheus by consuming the data that Prometheus stores. Grafana queries the Prometheus database to retrieve the metrics you want to visualize. It is an open-source platform used for this purpose and offers an intuitive interface for designing these custom dashboards, graphs, and visualizations.
+You may be aware of Grafana, or have at least heard of it. It is a separate tool from Prometheus, but they work seamlessly together to create visualizations and dashboards of metrics stored in Prometheus by consuming the data that Prometheus stores. Grafana queries the Prometheus database to retrieve the metrics you want to visualize. It is an open-source platform used for this purpose and offers an intuitive interface for designing custom dashboards, graphs, and visualizations.
 
 
 ## Lab Exercise 4: Enabling Grafana in Existing Compose Deployment
 
 1. Add the snippet below to the volumes section at the top of your docker-compose.yaml. This will create and mount an external volume for grafana.
 
-\
+
 
 
       grafana-db-volume:
@@ -236,7 +233,7 @@ You may be aware of Grafana, or have least heard of it. It is a separate tool to
 
 **Tip**: If you don’t set this volume correctly, when you add the configuration in the next step and try to run docker-compose up -d you will see the following error as the volume is not being defined; 
 
-\
+
 
 
     $ docker-compose up -d
@@ -300,7 +297,6 @@ Point browser at <http://localhost:3001>.
 \
 \
 \
-\
 
 
 
@@ -310,13 +306,13 @@ Once you have Grafana loaded up, you should see a set of graphs as part of the d
 
 If we take a look at the example screenshot below, you will see 4 graphs which we will briefly walk through understanding and see how they relate to each other and how common customer asks tie into them and can be used to gather more information for customers.\
 \
-You can see that I started scanning images at around 14:30 where the Analyzer Status has noticeable activity in the graph as the status changes. Corresponding with this, if you take a look at each of the other graphs around the same time period, you will see how they each ‘react’ to processing images. For example, the API CPU usage spikes substantially while all 3 images where added(1 scanning and 2 queued) but then falls again as you can see each subsequent scan complete. You can see the key below the CPU graph, which will allow you to choose the service that you wish to see the graph for - the image currently depicts just the API service.
+You can see that I started scanning images at around 14:30 where the Analyzer Status has noticeable activity in the graph as the status changes. Corresponding with this, if you take a look at each of the other graphs around the same time period, you will see how they each ‘react’ to processing images. For example, the API CPU usage spikes substantially while all 3 images were added(1 scanning and 2 queued) but then falls again as you can see each subsequent scan complete. You can see the key below the CPU graph, which will allow you to choose the service that you wish to see the graph for - the image currently depicts just the API service.
 
-You can see the same for the Memory: Process RSS graph bottom right with the lines for each service all plotted on the graph - you can see that the catalog is constantly the most memory hungry service running at 3GB and the policy engine at 1GB, but you will notice that the Memory: Process Type RSS graph top right contains just 1 single line. This line is the sum of the count parameters??
+You can see the same for the Memory: Process RSS graph bottom right with the lines for each service all plotted on the graph - you can see that the catalog is constantly the most memory-hungry service running at 3GB and the policy engine at 1GB, but you will notice that the Memory: Process Type RSS graph top right contains just 1 single line. This line is the sum of the count parameters??
 
 ![](https://lh7-rt.googleusercontent.com/docsz/AD_4nXdn4IHxwTNgQYuMOONJwIoN0qVAuh4R1hkV-DmHh1kcVkHQakaEQo_YlwL1Dg2klXECMPiOiLgl4zWfCuxi_25yZSfvXQZ1IR1YFavWljoXyPzalVHfPgMDM61j3jNrTtyrnxikm-KoLcWgMQo71x-SiOg?key=yhcfB7su20ibDNRSMmeo7A)
 
-\
+
 
 
 A customer is seeing a particular service crash
@@ -327,7 +323,7 @@ A customer is seeing a particular service crash
 
 - View the CPU/mem metrics for this to show how you can tune the deployment
 
-\
+
 
 
 Continued Learning;\
